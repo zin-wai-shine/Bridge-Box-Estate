@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  LuLayoutDashboard, LuClipboardList, LuCheckSquare, 
+  LuLayoutDashboard, LuClipboardList, LuCheck, 
   LuShieldAlert, LuZap, LuRefreshCw, LuPlus,
   LuExternalLink, LuMoreVertical, LuTrendingUp, LuHome,
   LuMessageSquare, LuLogOut, LuChevronRight, LuImage
@@ -271,7 +271,7 @@ export default function AdminPage() {
   const navItems = [
     { id: 'dashboard', label: 'Overview', icon: LuLayoutDashboard },
     { id: 'drafts', label: 'Drafts', icon: LuClipboardList },
-    { id: 'active', label: 'Active', icon: LuCheckSquare },
+    { id: 'active', label: 'Active', icon: LuCheck },
     { id: 'permissions', label: 'Permissions', icon: LuShieldAlert },
     { id: 'scrape', label: 'Bridge Scraper', icon: LuZap },
   ]

@@ -17,6 +17,7 @@ import {
 } from 'react-icons/hi2'
 import { sendMessage, getSessions, createSession, updateSession, deleteSession, getSessionHistory } from '../services/api'
 import ChatSidebar from '../components/ChatSidebar'
+import PropertyResults from '../components/PropertyResults'
 
 const quickActions = [
   { label: 'Find a Home', icon: HiSparkles, message: 'Find me available properties' },
@@ -206,18 +207,55 @@ function renderBold(text) {
 // MessageContent component that renders text + property cards
 function MessageContent({ content }) {
   const parts = parseMessageContent(content)
+  const renderedParts = []
+  let propertyGroup = []
+
+  const flushPropertyGroup = (keyPrefix) => {
+    if (propertyGroup.length === 0) return
+    
+    if (propertyGroup.length > 2) {
+      renderedParts.push(
+        <PropertyResults 
+          key={`group-${keyPrefix}`} 
+          properties={propertyGroup} 
+          locationHint={extractLocationHint(content)}
+        />
+      )
+    } else {
+      propertyGroup.forEach((prop, idx) => {
+        renderedParts.push(<PropertyCard key={`prop-${keyPrefix}-${idx}`} property={prop} />)
+      })
+    }
+    propertyGroup = []
+  }
+
+  parts.forEach((part, i) => {
+    if (part.type === 'property') {
+      propertyGroup.push(part.content)
+    } else {
+      flushPropertyGroup(i)
+      renderedParts.push(<div key={i} style={{ lineHeight: 1.6 }}>{renderMarkdown(part.content)}</div>)
+    }
+  })
+  flushPropertyGroup('final')
 
   return (
     <div>
-      {parts.map((part, i) => {
-        if (part.type === 'property') {
-          return <PropertyCard key={i} property={part.content} />
-        }
-        return <div key={i} style={{ lineHeight: 1.6 }}>{renderMarkdown(part.content)}</div>
-      })}
+      {renderedParts}
     </div>
   )
 }
+
+// Simple helper to guess location from text
+function extractLocationHint(text) {
+  const words = text.split(' ')
+  const inIndex = words.indexOf('in')
+  if (inIndex !== -1 && inIndex < words.length - 1) {
+    return words[inIndex + 1].replace(/[.,?!]/g, '')
+  }
+  return 'Requested Area'
+}
+
 
 export default function ChatPage() {
   const navigate = useNavigate()

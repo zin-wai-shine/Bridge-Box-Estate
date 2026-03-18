@@ -1,0 +1,1 @@
+{"message":"Login successful","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozLCJlbWFpbCI6InRlc3RfYWlfY2hlY2tAZXhhbXBsZS5jb20iLCJyb2xlIjoiQWdlbnQiLCJpc3MiOiJicmlib3giLCJleHAiOjE3NzM5MTAzNDUsImlhdCI6MTc3MzgyMzk0NX0.0gcjWipqg6gKGy8XOrR4xHGfIh0sZN9voQ5-xVPO6fY","user":{"email":"test_ai_check@example.com","id":3,"role":"Agent"}}

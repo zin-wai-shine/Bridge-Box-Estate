@@ -1,0 +1,36 @@
+# flyctl launch added from .gitignore
+# Dependencies
+**/node_modules
+**/vendor
+
+# Build outputs
+**/dist
+**/build
+**/*.exe
+**/*.dll
+**/*.so
+**/*.dylib
+
+# Environment
+**/.env
+**/*.env.local
+
+# IDE
+**/.idea
+**/.vscode
+**/*.swp
+**/*.swo
+**/*~
+
+# OS
+**/.DS_Store
+**/Thumbs.db
+
+# Go
+**/*.test
+**/*.out
+**/coverage.txt
+
+# Docker
+**/*.log
+fly.toml

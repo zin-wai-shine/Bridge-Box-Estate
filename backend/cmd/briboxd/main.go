@@ -45,7 +45,7 @@ func main() {
 	r.Use(rateLimitMiddleware())
 
 	// Health check
-	r.GET("/health", func(c *gin.Context) {
+	r.GET("/api/v1/health", func(c *gin.Context) {
 		sqlDB, err := db.DB()
 		dbStatus := "healthy"
 		if err != nil || sqlDB.Ping() != nil {
@@ -56,6 +56,15 @@ func main() {
 			"database": dbStatus,
 			"time":     time.Now().UTC(),
 		})
+	})
+
+	// Serve Frontend Static Files
+	r.StaticFS("/assets", http.Dir("./dist/assets"))
+	r.StaticFile("/vite.svg", "./dist/vite.svg")
+	
+	// Fallback to index.html for React Router
+	r.NoRoute(func(c *gin.Context) {
+		c.File("./dist/index.html")
 	})
 
 	// Initialize handlers

@@ -1,0 +1,34 @@
+# Build Frontend
+FROM node:22-alpine AS builder-frontend
+WORKDIR /app
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ .
+RUN npm run build
+
+# Build Backend
+FROM golang:1.25-alpine AS builder-backend
+WORKDIR /app
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+COPY backend/ .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /briboxd ./cmd/briboxd
+
+# Runtime Stage
+FROM alpine:3.19
+RUN apk --no-cache add ca-certificates tzdata
+WORKDIR /app
+
+# Copy Go binary
+COPY --from=builder-backend /briboxd .
+
+# Copy built React frontend into ./dist
+COPY --from=builder-frontend /app/dist ./dist
+
+# Keep the .env fallback, but Fly will provide real ENV vars via secrets
+COPY backend/.env.example .env
+
+ENV SERVER_PORT=8080
+EXPOSE 8080
+
+CMD ["./briboxd"]

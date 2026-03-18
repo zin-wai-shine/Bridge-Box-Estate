@@ -52,6 +52,9 @@ func Load() *Config {
 
 // DSN returns the PostgreSQL connection string
 func (c *Config) DSN() string {
+	if url := os.Getenv("DATABASE_URL"); url != "" {
+		return url
+	}
 	return "host=" + c.DBHost +
 		" user=" + c.DBUser +
 		" password=" + c.DBPassword +

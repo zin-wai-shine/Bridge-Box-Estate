@@ -12,6 +12,7 @@ import {
   updateProperty, approveProperty, deleteProperty,
   approvePermission, denyPermission, scrapeProperty
 } from '../services/api'
+import DataTable from '../components/DataTable'
 
 export default function AdminPage() {
   const navigate = useNavigate()
@@ -88,6 +89,58 @@ export default function AdminPage() {
     localStorage.removeItem('bribox_user')
     navigate('/login')
   }
+
+  // Column Definitions
+  const draftColumns = [
+    { accessorKey: 'address', header: 'Address', cell: (info) => `${info.row.original.address}, ${info.row.original.city}` },
+    { accessorKey: 'price', header: 'Price', cell: (info) => `$${info.getValue()?.toLocaleString()}` },
+    { header: 'Beds / Baths', cell: (info) => `${info.row.original.bedrooms}bd / ${info.row.original.bathrooms}ba` },
+    { accessorKey: 'status', header: 'Status', cell: (info) => <span className="badge badge-draft">{info.getValue()}</span> },
+    {
+      header: 'Actions',
+      cell: (info) => (
+        <div className="flex gap-2">
+          <button onClick={() => setEditProp(info.row.original)} className="btn btn-secondary btn-sm">
+            <HiOutlinePencil /> Edit
+          </button>
+          <button onClick={() => handleApprove(info.row.original.id)} className="btn btn-success btn-sm">
+            <HiOutlineCheck /> Approve
+          </button>
+          <button onClick={() => handleDelete(info.row.original.id)} className="btn btn-danger btn-sm">
+            <HiOutlineTrash />
+          </button>
+        </div>
+      )
+    }
+  ]
+
+  const activeColumns = [
+    { accessorKey: 'address', header: 'Address', cell: (info) => `${info.row.original.address}, ${info.row.original.city}` },
+    { accessorKey: 'price', header: 'Price', cell: (info) => `$${info.getValue()?.toLocaleString()}` },
+    { header: 'Beds / Baths', cell: (info) => `${info.row.original.bedrooms}bd / ${info.row.original.bathrooms}ba` },
+    { accessorKey: 'square_footage', header: 'Sq.Ft', cell: (info) => info.getValue()?.toLocaleString() },
+    { accessorKey: 'status', header: 'Status', cell: (info) => <span className="badge badge-active">{info.getValue()}</span> },
+  ]
+
+  const permissionColumns = [
+    { accessorKey: 'property_id', header: 'Property ID' },
+    { accessorKey: 'owner_user_id', header: 'Owner ID' },
+    { accessorKey: 'status', header: 'Status', cell: (info) => <span className={`badge badge-${info.getValue()?.toLowerCase()}`}>{info.getValue()}</span> },
+    { accessorKey: 'chat_log_snippet', header: 'Request Context', cell: (info) => info.getValue() ? `"${info.getValue()}"` : '-' },
+    {
+      header: 'Actions',
+      cell: (info) => info.row.original.status === 'Pending' ? (
+        <div className="flex gap-2">
+          <button onClick={() => handlePermApprove(info.row.original.id)} className="btn btn-success btn-sm">
+            <HiOutlineCheck /> Approve
+          </button>
+          <button onClick={() => handlePermDeny(info.row.original.id)} className="btn btn-danger btn-sm">
+            <HiOutlineX /> Deny
+          </button>
+        </div>
+      ) : '-'
+    }
+  ]
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: HiOutlineHome },
@@ -189,49 +242,7 @@ export default function AdminPage() {
             {tab === 'drafts' && (
               <motion.div key="drafts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}>
                 <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Draft Listings</h2>
-                {drafts.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>
-                    <HiOutlineClipboardCheck style={{ fontSize: 56, marginBottom: 16 }} />
-                    <p style={{ fontSize: 16 }}>No draft listings yet. Use the Bridge Scraper to add properties.</p>
-                  </div>
-                ) : (
-                  <div className="glass" style={{ overflow: 'hidden' }}>
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Address</th>
-                          <th>Price</th>
-                          <th>Beds / Baths</th>
-                          <th>Status</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {drafts.map(p => (
-                          <tr key={p.id}>
-                            <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-                              {p.address}, {p.city}
-                            </td>
-                            <td>${p.price?.toLocaleString()}</td>
-                            <td>{p.bedrooms}bd / {p.bathrooms}ba</td>
-                            <td><span className="badge badge-draft">{p.status}</span></td>
-                            <td style={{ display: 'flex', gap: 8 }}>
-                              <button onClick={() => setEditProp(p)} className="btn btn-secondary btn-sm">
-                                <HiOutlinePencil /> Edit
-                              </button>
-                              <button onClick={() => handleApprove(p.id)} className="btn btn-success btn-sm">
-                                <HiOutlineCheck /> Approve
-                              </button>
-                              <button onClick={() => handleDelete(p.id)} className="btn btn-danger btn-sm">
-                                <HiOutlineTrash />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                <DataTable columns={draftColumns} data={drafts} isLoading={loading} />
               </motion.div>
             )}
 
@@ -239,37 +250,7 @@ export default function AdminPage() {
             {tab === 'active' && (
               <motion.div key="active" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}>
                 <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Active Listings</h2>
-                {actives.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>
-                    <HiOutlineExternalLink style={{ fontSize: 56, marginBottom: 16 }} />
-                    <p style={{ fontSize: 16 }}>No active listings. Approve draft listings to see them here.</p>
-                  </div>
-                ) : (
-                  <div className="glass" style={{ overflow: 'hidden' }}>
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Address</th>
-                          <th>Price</th>
-                          <th>Beds / Baths</th>
-                          <th>Sq.Ft</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {actives.map(p => (
-                          <tr key={p.id}>
-                            <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{p.address}, {p.city}</td>
-                            <td>${p.price?.toLocaleString()}</td>
-                            <td>{p.bedrooms}bd / {p.bathrooms}ba</td>
-                            <td>{p.square_footage?.toLocaleString()}</td>
-                            <td><span className="badge badge-active">{p.status}</span></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                <DataTable columns={activeColumns} data={actives} isLoading={loading} />
               </motion.div>
             )}
 
@@ -277,44 +258,7 @@ export default function AdminPage() {
             {tab === 'permissions' && (
               <motion.div key="permissions" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}>
                 <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Permission Requests</h2>
-                {permissions.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>
-                    <HiOutlineShieldCheck style={{ fontSize: 56, marginBottom: 16 }} />
-                    <p style={{ fontSize: 16 }}>No permission requests at this time.</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    {permissions.map(perm => (
-                      <div key={perm.id} className="glass" style={{ padding: 24 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div>
-                            <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 15 }}>
-                              Property #{perm.property_id}
-                            </div>
-                            <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
-                              Owner: #{perm.owner_user_id} • <span className={`badge badge-${perm.status?.toLowerCase()}`}>{perm.status}</span>
-                            </div>
-                            {perm.chat_log_snippet && (
-                              <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 10, fontStyle: 'italic', background: '#f5f5f5', padding: '8px 12px', borderRadius: 8 }}>
-                                "{perm.chat_log_snippet}"
-                              </p>
-                            )}
-                          </div>
-                          {perm.status === 'Pending' && (
-                            <div style={{ display: 'flex', gap: 10 }}>
-                              <button onClick={() => handlePermApprove(perm.id)} className="btn btn-success">
-                                <HiOutlineCheck /> Approve
-                              </button>
-                              <button onClick={() => handlePermDeny(perm.id)} className="btn btn-danger">
-                                <HiOutlineX /> Deny
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <DataTable columns={permissionColumns} data={permissions} isLoading={loading} />
               </motion.div>
             )}
 

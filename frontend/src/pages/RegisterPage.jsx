@@ -68,7 +68,7 @@ export default function RegisterPage() {
             transition={{ duration: 0.4 }}
             style={{
               padding: '10px 14px', borderRadius: 8, marginBottom: 20,
-              background: '#fee2e2', border: '1px solid #fecaca',
+              background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--danger)',
               color: 'var(--danger)', fontSize: 13
             }}
           >
@@ -135,7 +135,7 @@ export default function RegisterPage() {
                   whileHover={{ 
                     scale: 1.02, 
                     y: role === r ? -2 : 0, 
-                    backgroundColor: role === r ? 'var(--accent-secondary)' : '#f9fafb',
+                    backgroundColor: role === r ? 'var(--accent-secondary)' : 'var(--bg-secondary)',
                     borderColor: role !== r ? 'var(--text-muted)' : 'none'
                   }}
                   transition={{ duration: 0.4 }}

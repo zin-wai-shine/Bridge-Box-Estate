@@ -67,7 +67,7 @@ export default function LoginPage() {
             transition={{ duration: 0.4 }}
             style={{
               padding: '10px 14px', borderRadius: 8, marginBottom: 20,
-              background: '#fee2e2', border: '1px solid #fecaca',
+              background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--danger)',
               color: 'var(--danger)', fontSize: 13
             }}
           >

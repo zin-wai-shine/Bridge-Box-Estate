@@ -10,6 +10,8 @@ import (
 	"github.com/bribox/backend/internal/database"
 	"github.com/bribox/backend/internal/handlers"
 	"github.com/bribox/backend/internal/models"
+	"github.com/bribox/backend/internal/services/llm_parser"
+	"github.com/bribox/backend/internal/services/scraper"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -69,9 +71,13 @@ func main() {
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(db, cfg.JWTSecret)
-	chatHandler := handlers.NewChatHandler(db, cfg.JWTSecret)
+	chatHandler := handlers.NewChatHandler(db, cfg.JWTSecret, cfg.OpenAIKey, cfg.GeminiKey)
+	convHandler := handlers.NewConversationHandler(db)
 	adminHandler := handlers.NewAdminHandler(db)
-	bridgeHandler := handlers.NewBridgeHandler(db, cfg.EncryptionKey)
+	
+	scraperSvc := scraper.NewService()
+	llmParserSvc := llm_parser.NewService(cfg.OpenAIKey, cfg.GeminiKey)
+	bridgeHandler := handlers.NewBridgeHandler(db, cfg.EncryptionKey, scraperSvc, llmParserSvc)
 
 	// API v1 routes
 	v1 := r.Group("/api/v1")
@@ -84,15 +90,27 @@ func main() {
 		authenticated := v1.Group("")
 		authenticated.Use(auth.AuthMiddleware(cfg.JWTSecret))
 		{
-			// Chat
+			// AI Chat
 			authenticated.POST("/chat", chatHandler.Chat)
-			authenticated.GET("/chat/history", chatHandler.GetChatHistory)
+
+			// Conversations (Sessions)
+			chats := authenticated.Group("/chats")
+			{
+				chats.GET("", convHandler.ListSessions)
+				chats.POST("", convHandler.CreateSession)
+				chats.PATCH("/:id", convHandler.UpdateSession)
+				chats.DELETE("/:id", convHandler.DeleteSession)
+				chats.GET("/:id/history", chatHandler.GetChatHistory)
+			}
 
 			// Bridge (scraping) - Agent & Admin only
 			bridge := authenticated.Group("/bridge")
 			bridge.Use(auth.RoleMiddleware(models.RoleAgent, models.RoleAdmin))
 			{
 				bridge.POST("/scrape", bridgeHandler.Scrape)
+				bridge.POST("/hybrid", bridgeHandler.HybridBridge)
+				bridge.POST("/refine/:id", bridgeHandler.Refine)
+				bridge.POST("/publish/:id", bridgeHandler.Publish)
 			}
 
 			// Admin panel - Agent & Admin only

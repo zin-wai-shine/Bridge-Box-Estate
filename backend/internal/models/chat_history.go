@@ -12,12 +12,14 @@ const (
 
 // ChatHistory stores conversation messages
 type ChatHistory struct {
-	ID             uint     `gorm:"primaryKey" json:"id"`
-	UserID         uint     `gorm:"not null;index" json:"user_id"`
-	Role           ChatRole `gorm:"type:varchar(10);not null" json:"role"`
-	MessageContent string   `gorm:"type:text;not null" json:"message_content"`
+	ID             uint      `gorm:"primaryKey" json:"id"`
+	SessionID      uint      `gorm:"index" json:"session_id"`
+	UserID         uint      `gorm:"not null;index" json:"user_id"`
+	Role           ChatRole  `gorm:"type:varchar(10);not null" json:"role"`
+	MessageContent string    `gorm:"type:text;not null" json:"message_content"`
 	Timestamp      time.Time `gorm:"autoCreateTime" json:"timestamp"`
 
 	// Relations
-	User User `gorm:"foreignKey:UserID" json:"-"`
+	User    User        `gorm:"foreignKey:UserID" json:"-"`
+	Session ChatSession `gorm:"foreignKey:SessionID;constraint:OnDelete:CASCADE" json:"-"`
 }

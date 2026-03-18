@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -19,6 +20,7 @@ type Config struct {
 	EncryptionKey string
 	ServerPort    string
 	OpenAIKey     string
+	GeminiKey     string
 	ImageAIKey    string
 	AllowOrigins  string
 }
@@ -36,15 +38,16 @@ func Load() *Config {
 		DBName:        getEnv("DB_NAME", "bribox_db"),
 		DBSSLMode:     getEnv("DB_SSLMODE", "disable"),
 		JWTSecret:     getEnv("JWT_SECRET", "change-me-in-production-32chars!"),
-		EncryptionKey: getEnv("ENCRYPTION_KEY", "change-me-32-byte-key-for-aes!!"),
+		EncryptionKey: strings.TrimSpace(getEnv("ENCRYPTION_KEY", "change-me-32-byte-key-for-aes!!")),
 		ServerPort:    getEnv("SERVER_PORT", "8080"),
 		OpenAIKey:     getEnv("OPENAI_API_KEY", ""),
+		GeminiKey:     getEnv("GEMINI_API_KEY", ""),
 		ImageAIKey:    getEnv("IMAGE_AI_API_KEY", ""),
 		AllowOrigins:  getEnv("ALLOW_ORIGINS", "http://localhost:5173"),
 	}
 
 	if len(cfg.EncryptionKey) != 32 {
-		log.Fatal("ENCRYPTION_KEY must be exactly 32 bytes for AES-256")
+		log.Fatalf("ENCRYPTION_KEY must be exactly 32 bytes for AES-256 (current length: %d)", len(cfg.EncryptionKey))
 	}
 
 	return cfg

@@ -30,6 +30,7 @@ func Connect(cfg *config.Config) *gorm.DB {
 		&models.Property{},
 		&models.Media{},
 		&models.PermissionLog{},
+		&models.ChatSession{},
 		&models.ChatHistory{},
 	)
 	if err != nil {

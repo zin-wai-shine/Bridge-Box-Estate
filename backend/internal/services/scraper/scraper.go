@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"strings"
 	"time"
+
+	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/chromedp"
 )
 
 // PropertyData holds scraped property information
@@ -32,96 +34,131 @@ type Service struct {
 // NewService creates a new scraper service
 func NewService() *Service {
 	return &Service{
-		UserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+		UserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
 	}
 }
 
-// ScrapeURL fetches content from a property listing URL
-// In production, this would use chromedp or go-rod for headless browsing
+// ScrapeURL fetches content from a property listing URL using a stealth headless browser
 func (s *Service) ScrapeURL(ctx context.Context, url string) (*PropertyData, error) {
-	log.Printf("🔍 Scraping URL: %s", url)
+	log.Printf("🔍 Scraping URL with stealth browser: %s", url)
 
-	// Create HTTP client with custom user agent to prevent tracking
-	client := &http.Client{
-		Timeout: 30 * time.Second,
+	// Configure chromedp options for stealth mode
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true), // Change to false for debugging if needed
+		chromedp.Flag("disable-gpu", true),
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("disable-blink-features", "AutomationControlled"),
+		chromedp.UserAgent(s.UserAgent),
+		chromedp.WindowSize(1920, 1080),
+	)
+
+	allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
+	defer cancel()
+
+	// Create a new browser context with a 45-second timeout
+	taskCtx, taskCancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
+	defer taskCancel()
+
+	timeoutCtx, timeoutCancel := context.WithTimeout(taskCtx, 15*time.Second)
+	defer timeoutCancel()
+
+	var rawHTML string
+	var imageNodes []*cdp.Node
+
+	// Define tasks
+	tasks := chromedp.Tasks{
+		// COMPREHENSIVE STEALTH SCRIPT
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			stealthScript := `
+				Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+				Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+				Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+				window.chrome = { runtime: {} };
+				const getParameter = WebGLRenderingContext.prototype.getParameter;
+				WebGLRenderingContext.prototype.getParameter = function(parameter) {
+					if (parameter === 37445) return 'Intel Open Source Technology Center';
+					if (parameter === 37446) return 'Mesa DRI Intel(R) HD Graphics 520 (Skylake GT2)';
+					return getParameter(parameter);
+				};
+			`
+			return chromedp.Evaluate(stealthScript, nil).Do(ctx)
+		}),
+		chromedp.Navigate(url),
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+	// Add dynamic waiting based on the target website
+	if strings.Contains(url, "facebook.com") {
+		// Wait for Facebook post content to load (typically inside roles=main or specific generic containers)
+		tasks = append(tasks,
+			chromedp.WaitVisible(`div[role="main"], div[data-ad-preview="message"]`, chromedp.ByQuery),
+			// Small delay for dynamic images to render
+			chromedp.Sleep(3*time.Second),
+		)
+	} else {
+		// Generic fallback: wait for body
+		tasks = append(tasks,
+			chromedp.WaitVisible(`body`, chromedp.ByQuery),
+			chromedp.Sleep(2*time.Second),
+		)
 	}
 
-	// Anti-tracking: use custom headers
-	req.Header.Set("User-Agent", s.UserAgent)
-	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
-	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("Upgrade-Insecure-Requests", "1")
+	// Extract the HTML and images
+	tasks = append(tasks,
+		chromedp.OuterHTML(`html`, &rawHTML, chromedp.ByQuery),
+		chromedp.Nodes(`img`, &imageNodes, chromedp.ByQueryAll),
+	)
 
-	resp, err := client.Do(req)
-	if err != nil {
-		// Fallback to mock data if scraping fails
-		log.Printf("⚠️ Scraping failed, using mock data: %v", err)
-		return s.mockScrape(url), nil
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("⚠️ Got status %d, using mock data", resp.StatusCode)
-		return s.mockScrape(url), nil
+	// Execute tasks
+	if err := chromedp.Run(timeoutCtx, tasks); err != nil {
+		log.Printf("⚠️ Scraping failed: %v", err)
+		return nil, fmt.Errorf("Unable to access source. Please ensure the post is public or try again later. (Error: %v)", err)
 	}
 
-	// For production: parse HTML with goquery or similar
-	// For now, return mock data but log that real scraping was attempted
-	log.Printf("✅ Successfully fetched page (status %d), parsing...", resp.StatusCode)
-	return s.mockScrape(url), nil
-}
+	log.Printf("✅ Successfully fetched page (%d bytes HTML)", len(rawHTML))
 
-// mockScrape returns realistic mock data based on the URL
-func (s *Service) mockScrape(url string) *PropertyData {
-	// Generate varied mock data based on URL hash
-	hash := 0
-	for _, c := range url {
-		hash += int(c)
+	// Extract high-res image URLs
+	var imageUrls []string
+	for _, node := range imageNodes {
+		src := node.AttributeValue("src")
+		if src == "" {
+			src = node.AttributeValue("data-src") // Handle lazy loading
+		}
+		
+		// Filter out tiny tracking pixels or icons
+		if src != "" && !strings.Contains(src, "data:image") && !strings.Contains(src, ".svg") {
+			// Basic heuristic: check if it looks like a real photo (Facebook CDN links often start with scontent)
+			if strings.Contains(src, "scontent") || strings.Contains(src, "photos") || len(src) > 50 {
+				imageUrls = append(imageUrls, src)
+			}
+		}
 	}
 
-	prices := []float64{299000, 425000, 550000, 675000, 850000, 1200000}
-	beds := []int{2, 3, 3, 4, 4, 5}
-	baths := []int{1, 2, 2, 3, 3, 4}
-	sqft := []int{1200, 1800, 2200, 2800, 3200, 4500}
-	cities := []string{"Austin", "Denver", "Portland", "Seattle", "San Diego", "Nashville"}
-	states := []string{"TX", "CO", "OR", "WA", "CA", "TN"}
+	// Deduplicate images
+	imageUrls = deduplicate(imageUrls)
 
-	idx := hash % len(prices)
-
-	// Determine a short domain name for the description
-	domain := url
-	if parts := strings.Split(url, "//"); len(parts) > 1 {
-		domain = strings.Split(parts[1], "/")[0]
+	// If no images found through direct node extraction, try basic string parsing of rawHTML
+	if len(imageUrls) == 0 {
+		log.Println("⚠️ No images found via DOM nodes, attempting regex/string search...")
+		// A simple regex approach could go here if needed, but chromedp Nodes is usually reliable
 	}
 
 	return &PropertyData{
-		Address:       fmt.Sprintf("%d Oak Valley Drive", 100+(hash%900)),
-		City:          cities[idx],
-		State:         states[idx],
-		Zip:           fmt.Sprintf("%d", 10001+(hash%89999)),
-		Price:         prices[idx],
-		Bedrooms:      beds[idx],
-		Bathrooms:     baths[idx],
-		SquareFootage: sqft[idx],
-		Description: fmt.Sprintf(
-			"Beautiful %d-bedroom, %d-bathroom home in %s, %s. "+
-				"This stunning property features %d sq ft of living space with modern finishes, "+
-				"an open floor plan, gourmet kitchen, and a spacious backyard. "+
-				"Located in a quiet, family-friendly neighborhood with top-rated schools nearby. "+
-				"Scraped from %s and enhanced by BriBox AI.",
-			beds[idx], baths[idx], cities[idx], states[idx], sqft[idx], domain,
-		),
-		ImageURLs: []string{
-			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800",
-			"https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800",
-			"https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800",
-		},
+		RawHTML:   rawHTML,
+		ImageURLs: imageUrls,
+		// The LLM parser will populate the rest
+	}, nil
+}
+
+// deduplicate removes duplicate strings from a string slice
+func deduplicate(input []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range input {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
 	}
+	return list
 }

@@ -39,11 +39,23 @@ export const login = (email, password) =>
   api.post('/login', { email, password })
 
 // Chat
-export const sendMessage = (message) =>
-  api.post('/chat', { message })
+export const sendMessage = (message, sessionId) =>
+  api.post('/chat', { message, session_id: sessionId })
 
-export const getChatHistory = () =>
-  api.get('/chat/history')
+export const getSessions = () =>
+  api.get('/chats')
+
+export const createSession = (title) =>
+  api.post('/chats', { title })
+
+export const updateSession = (id, data) =>
+  api.patch(`/chats/${id}`, data)
+
+export const deleteSession = (id) =>
+  api.delete(`/chats/${id}`)
+
+export const getSessionHistory = (id) =>
+  api.get(`/chats/${id}/history`)
 
 // Admin
 export const getDashboardStats = () =>
@@ -76,5 +88,11 @@ export const denyPermission = (id) =>
 // Bridge
 export const scrapeProperty = (sourceUrl) =>
   api.post('/bridge/scrape', { source_url: sourceUrl })
+
+export const refineDraft = (id, instruction) =>
+  api.post(`/bridge/refine/${id}`, { instruction })
+
+export const publishProperty = (id, platform) =>
+  api.post(`/bridge/publish/${id}`, { platform })
 
 export default api

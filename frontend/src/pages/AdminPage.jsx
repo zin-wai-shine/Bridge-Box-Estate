@@ -3,18 +3,22 @@ import axios from 'axios'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  LuLayoutDashboard, LuClipboardList, LuCheck, 
-  LuShieldAlert, LuZap, LuRefreshCw, LuPlus,
-  LuExternalLink, LuTrendingUp, LuHome,
-  LuChevronRight, LuImage
-} from 'react-icons/lu'
-import { 
-  HiOutlineMicrophone, HiArrowUp, HiPlus, 
-  HiOutlineAdjustments as HiAdjustments,
-  HiOutlineLightningBolt, HiOutlineCheck, HiOutlineX, HiOutlineTrash,
-  HiOutlineHome, HiOutlineClipboardCheck, HiOutlineShieldCheck, HiOutlineLink,
-  HiOutlineExternalLink, HiOutlineChatAlt as HiOutlineChat, HiOutlineLogout,
-  HiDotsVertical
+  HiOutlineHome, 
+  HiOutlineClipboardList, 
+  HiOutlineCheckCircle, 
+  HiOutlineShieldExclamation,
+  HiOutlineLightningBolt, 
+  HiOutlineRefresh, 
+  HiOutlinePlus,
+  HiOutlineExternalLink, 
+  HiOutlineTrendingUp,
+  HiOutlineChevronRight, 
+  HiOutlinePhotograph,
+  HiOutlineChatAlt,
+  HiOutlineLogout,
+  HiDotsVertical,
+  HiViewGrid,
+  HiArrowUp
 } from 'react-icons/hi'
 import {
   getDashboardStats, getDraftListings, getActiveListings, getPermissions,
@@ -260,12 +264,12 @@ export default function AdminPage() {
       headerName: 'ACTIONS',
       cellRenderer: (params) => (
         <div className="flex gap-4 h-full items-center">
-          <HiOutlineCheck 
+          <HiOutlineCheckCircle 
             className="cursor-pointer hover:text-[var(--success)]" 
             style={{ fontSize: 18, color: '#868e96' }} 
             onClick={() => handleApprove(params.data.id)}
           />
-          <HiOutlineTrash 
+          <HiOutlinePhotograph 
             className="cursor-pointer hover:text-[var(--danger)]" 
             style={{ fontSize: 18, color: '#868e96' }} 
             onClick={() => handleDelete(params.data.id)}
@@ -276,11 +280,11 @@ export default function AdminPage() {
   ]
 
   const navItems = [
-    { id: 'dashboard', label: 'Overview', icon: LuLayoutDashboard },
-    { id: 'drafts', label: 'Drafts', icon: LuClipboardList },
-    { id: 'active', label: 'Active', icon: LuCheck },
-    { id: 'permissions', label: 'Permissions', icon: LuShieldAlert },
-    { id: 'scrape', label: 'Bridge Scraper', icon: LuZap },
+    { id: 'dashboard', label: 'Overview', icon: HiViewGrid },
+    { id: 'drafts', label: 'Drafts', icon: HiOutlineClipboardList },
+    { id: 'active', label: 'Active', icon: HiOutlineCheckCircle },
+    { id: 'permissions', label: 'Permissions', icon: HiOutlineShieldExclamation },
+    { id: 'scrape', label: 'Bridge Scraper', icon: HiOutlineLightningBolt },
   ]
 
   // Animation variants
@@ -323,7 +327,7 @@ export default function AdminPage() {
             <div style={{ width: 32, height: 32, background: '#1a1a1a', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800 }}>B</div>
           )}
           <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: '#868e96', cursor: 'pointer', padding: 4 }}>
-             <LuLayoutDashboard style={{ transform: sidebarOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} />
+             <HiViewGrid style={{ transform: sidebarOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} />
           </button>
         </div>
 
@@ -389,7 +393,7 @@ export default function AdminPage() {
                         boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
                       }}
                     >
-                      <HiOutlineChat size={14} />
+                      <HiOutlineChatAlt size={14} />
                     </Link>
                     <button onClick={handleLogout} 
                       style={{ 
@@ -428,15 +432,15 @@ export default function AdminPage() {
                     transition: 'all 0.2s'
                   }}
                 >
-                  <LuRefreshCw className={loading ? 'animate-spin' : ''} style={{ fontSize: 14 }} /> Refresh
+                  <HiOutlineRefresh className={loading ? 'animate-spin' : ''} style={{ fontSize: 14 }} /> Refresh
                 </button>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
                 {[
-                  { label: 'Draft Listings', value: stats.draft_listings, trend: '+4 this week', icon: LuClipboardList },
-                  { label: 'Active Listings', value: stats.active_listings, trend: '+12.5% vs last week', icon: LuCheckSquare },
-                  { label: 'Pending Requests', value: stats.pending_permissions, trend: '2 urgent', icon: LuShieldAlert }
+                  { label: 'Draft Listings', value: stats.draft_listings, trend: '+4 this week', icon: HiOutlineClipboardList },
+                  { label: 'Active Listings', value: stats.active_listings, trend: '+12.5% vs last week', icon: HiOutlineCheckCircle },
+                  { label: 'Pending Requests', value: stats.pending_permissions, trend: '2 urgent', icon: HiOutlineShieldExclamation }
                 ].map((stat, i) => (
                   <motion.div 
                     key={i}
@@ -459,7 +463,7 @@ export default function AdminPage() {
                     <div>
                       <div style={{ fontSize: 36, fontWeight: 300, color: '#1a1a1a', letterSpacing: -1 }}>{stat.value}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#40c057', fontSize: 11, fontWeight: 600, marginTop: 4 }}>
-                        <LuTrendingUp size={12} />
+                        <HiOutlineTrendingUp size={12} />
                         {stat.trend}
                       </div>
                     </div>
@@ -497,7 +501,7 @@ export default function AdminPage() {
                     }}
                   >
                     <div style={{ width: 56, height: 56, borderRadius: 10, background: '#f8f9fa', overflow: 'hidden', border: '1px solid #f1f3f5' }}>
-                      {item.image_url ? <img src={item.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#adb5bd' }}><LuImage size={24} /></div>}
+                      {item.image_url ? <img src={item.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#adb5bd' }}><HiOutlinePhotograph size={24} /></div>}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: 15, color: '#1a1a1a', marginBottom: 2 }}>{item.title || item.property_name || 'Listing #' + item.id}</div>
@@ -512,7 +516,7 @@ export default function AdminPage() {
                   </motion.div>
                 )) : (
                   <motion.div variants={itemVariants} style={{ textAlign: 'center', padding: '80px 0', color: '#868e96' }}>
-                     <LuHome size={64} style={{ margin: '0 auto', opacity: 0.1, marginBottom: 24 }} />
+                     <HiOutlineHome size={64} style={{ margin: '0 auto', opacity: 0.1, marginBottom: 24 }} />
                      <h3 style={{ fontSize: 20, color: '#1a1a1a', fontWeight: 600, marginBottom: 8 }}>Your bridge is clear.</h3>
                      <p>Paste a URL to begin populating your estate.</p>
                   </motion.div>
@@ -572,7 +576,7 @@ export default function AdminPage() {
                                 <div style={{ background: 'white', border: '1px solid #f1f3f5', padding: 24, borderRadius: 20, width: 320, display: 'flex', flexDirection: 'column', gap: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
                                   {log.steps.map((s, idx) => (
                                     <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                      {s.status === 'success' ? <HiOutlineCheck style={{ color: '#099268', fontSize: 18 }} /> : s.status === 'loading' ? <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #1a1a1a', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #f1f3f5' }} />}
+                                      {s.status === 'success' ? <HiOutlineCheckCircle style={{ color: '#099268', fontSize: 18 }} /> : s.status === 'loading' ? <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #1a1a1a', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #f1f3f5' }} />}
                                       <span style={{ fontSize: 13, color: s.status === 'pending' ? '#adb5bd' : '#495057' }}>{s.label}</span>
                                     </div>
                                   ))}
@@ -608,7 +612,7 @@ export default function AdminPage() {
                   <textarea placeholder="Paste listing URL..." value={scrapeUrl} onChange={e => setScrapeUrl(e.target.value)} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', fontSize: 16, resize: 'none', flex: 1 }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
                     <div style={{ display: 'flex', gap: 12 }}>
-                       <label style={{ cursor: 'pointer' }}><HiPlus style={{ color: '#868e96' }} /><input type="file" multiple hidden onChange={handleFileChange} /></label>
+                       <label style={{ cursor: 'pointer' }}><HiOutlinePlus style={{ color: '#868e96' }} /><input type="file" multiple hidden onChange={handleFileChange} /></label>
                        <HiOutlineLightningBolt style={{ color: '#868e96' }} />
                     </div>
                     <button onClick={handleScrape} style={{ background: '#1a1a1a', color: 'white', width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer' }}><HiArrowUp /></button>

@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bribox-postgres
+    environment:
+      POSTGRES_USER: bribox
+      POSTGRES_PASSWORD: bribox_secret
+      POSTGRES_DB: bribox_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bribox -d bribox_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bribox-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - backend/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bribox
+      DB_PASSWORD: bribox_secret
+      DB_NAME: bribox_db
+      DB_SSLMODE: disable
+      SERVER_PORT: 8080
+      JWT_SECRET: change-me-in-production-32chars!
+      ENCRYPTION_KEY: "12345678901234567890123456789012"
+      ALLOW_ORIGINS: http://localhost:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bribox-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:

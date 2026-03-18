@@ -61,8 +61,9 @@ function PropertyCard({ property }) {
         </div>
         <div style={{
           fontWeight: 800, fontSize: 18, color: 'var(--text-primary)',
-          background: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--success)',
+          background: '#ffffff', border: '1px solid var(--border)',
           padding: '4px 12px', borderRadius: 8,
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
         }}>
           {formatPrice(property.price)}
         </div>
@@ -510,12 +511,13 @@ export default function ChatPage() {
                   <div style={{
                     maxWidth: msg.role === 'user' ? '80%' : '100%',
                     padding: msg.role === 'user' ? '12px 18px' : '8px 0',
-                    background: msg.role === 'user' ? 'var(--bg-card)' : 'transparent',
+                    background: msg.role === 'user' ? 'var(--bg-input)' : 'transparent',
                     borderRadius: msg.role === 'user' ? 20 : 0,
                     color: msg.error ? 'var(--danger)' : 'var(--text-primary)',
                     fontSize: 15,
                     lineHeight: 1.6,
-                    boxShadow: msg.role === 'user' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
+                    border: msg.role === 'user' ? '1px solid var(--border)' : 'none',
+                    boxShadow: msg.role === 'user' ? '0 2px 10px rgba(0,0,0,0.03)' : 'none'
                   }}>
                     {msg.role === 'ai' && (
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -559,9 +561,9 @@ export default function ChatPage() {
 
         {/* Bottom Input Area */}
         <div style={{
-          borderTop: 'none',
-          background: '#121212',
-          padding: '0 24px 24px',
+          borderTop: '1px solid var(--border)',
+          background: '#ffffff',
+          padding: '24px',
         }}>
           <div style={{ maxWidth: 740, margin: '0 auto' }}>
             {/* Quick Actions */}
@@ -596,17 +598,18 @@ export default function ChatPage() {
               className="glass-strong"
               style={{ 
                 borderRadius: 24, 
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid var(--border)',
                 padding: '16px 20px',
                 display: 'flex',
                 flexDirection: 'column',
                 minHeight: 120,
                 position: 'relative',
-                background: 'rgba(255,255,255,0.03)'
+                background: '#f9fafb',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
               }}
             >
               {/* Top Right Indicator Dot */}
-              <div style={{ position: 'absolute', top: 16, right: 20, width: 8, height: 8, borderRadius: '50%', background: '#7c4dff', boxShadow: '0 0 10px #7c4dff' }} />
+              <div style={{ position: 'absolute', top: 16, right: 20, width: 8, height: 8, borderRadius: '50%', background: '#171717', boxShadow: '0 0 10px rgba(0,0,0,0.1)' }} />
 
               <textarea 
                 ref={inputRef}
@@ -630,27 +633,28 @@ export default function ChatPage() {
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.15)', color: '#9aa0a6', cursor: 'pointer' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer', background: 'white' }}>
                     <HiPlus style={{ fontSize: 18 }} />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', color: '#9aa0a6' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer', background: 'white' }}>
                     <HiBolt style={{ fontSize: 16 }} />
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                  <HiMicrophone style={{ color: '#9aa0a6', fontSize: 20, cursor: 'pointer' }} />
+                  <HiMicrophone style={{ color: 'var(--text-secondary)', fontSize: 20, cursor: 'pointer' }} />
                   <motion.button 
                     onClick={() => handleSend()}
                     disabled={!input.trim() || loading}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     style={{ 
-                      background: 'white', color: 'black', border: 'none', borderRadius: '50%',
+                      background: 'var(--accent-primary)', color: 'white', border: 'none', borderRadius: '50%',
                       width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       cursor: (input.trim() && !loading) ? 'pointer' : 'default', 
                       opacity: (loading || !input.trim()) ? 0.3 : 1, 
-                      transition: 'transform 0.2s'
+                      transition: 'all 0.2s',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                     }}
                   >
                     <HiArrowUp style={{ fontSize: 20 }} />

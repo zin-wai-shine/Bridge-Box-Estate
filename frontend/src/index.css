@@ -2,24 +2,24 @@
 
 /* ===== Design System (Antigravity Theme) ===== */
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --bg-input: #f9fafb;
-  --accent-primary: #171717;
-  --accent-secondary: #404040;
-  --accent-glow: rgba(0, 0, 0, 0.05);
-  --text-primary: #171717;
-  --text-secondary: #737373;
-  --text-muted: #a3a3a3;
-  --border: #f5f5f5;
-  --border-hover: #e5e5e5;
+  --bg-primary: #121212;
+  --bg-secondary: #121212;
+  --bg-card: #1c1c1c;
+  --bg-input: #242424;
+  --accent-primary: #00a3ff;
+  --accent-secondary: #0077ff;
+  --accent-glow: rgba(0, 163, 255, 0.1);
+  --text-primary: #DADADA;
+  --text-secondary: #a3a3a3;
+  --text-muted: #666666;
+  --border: #262626;
+  --border-hover: #404040;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
-  --radius: 14px;
-  --radius-lg: 24px;
-  --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {

@@ -5,15 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   LuLayoutDashboard, LuClipboardList, LuCheck, 
   LuShieldAlert, LuZap, LuRefreshCw, LuPlus,
-  LuExternalLink, LuMoreVertical, LuTrendingUp, LuHome,
-  LuMessageSquare, LuLogOut, LuChevronRight, LuImage
+  LuExternalLink, LuTrendingUp, LuHome,
+  LuChevronRight, LuImage
 } from 'react-icons/lu'
 import { 
   HiOutlineMicrophone, HiArrowUp, HiPlus, 
   HiOutlineAdjustments as HiAdjustments,
   HiOutlineLightningBolt, HiOutlineCheck, HiOutlineX, HiOutlineTrash,
   HiOutlineHome, HiOutlineClipboardCheck, HiOutlineShieldCheck, HiOutlineLink,
-  HiOutlineExternalLink, HiOutlineChat, HiOutlineLogout
+  HiOutlineExternalLink, HiOutlineChatAlt as HiOutlineChat, HiOutlineLogout,
+  HiDotsVertical
 } from 'react-icons/hi'
 import {
   getDashboardStats, getDraftListings, getActiveListings, getPermissions,
@@ -89,6 +90,12 @@ export default function AdminPage() {
   const handlePermDeny = async (id) => {
     await denyPermission(id)
     loadData()
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('bribox_token')
+    localStorage.removeItem('bribox_user')
+    navigate('/login')
   }
 
   const handleFileChange = (e) => {
@@ -382,7 +389,7 @@ export default function AdminPage() {
                         boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
                       }}
                     >
-                      <LuMessageSquare size={14} />
+                      <HiOutlineChat size={14} />
                     </Link>
                     <button onClick={handleLogout} 
                       style={{ 
@@ -392,7 +399,7 @@ export default function AdminPage() {
                         boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
                       }}
                     >
-                      <LuLogOut size={14} />
+                      <HiOutlineLogout size={14} />
                     </button>
                   </div>
                </div>
@@ -499,7 +506,7 @@ export default function AdminPage() {
                     <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
                        <div style={{ padding: '4px 10px', borderRadius: 6, background: '#e6fcf5', color: '#099268', fontSize: 10, fontWeight: 700, letterSpacing: 0.5 }}>ACTIVE</div>
                        <div style={{ color: '#adb5bd', cursor: 'pointer', padding: 8, borderRadius: 8 }} onMouseOver={(e) => e.currentTarget.style.background = '#f8f9fa'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                         <LuMoreVertical size={18} />
+                         <HiDotsVertical size={18} />
                        </div>
                     </div>
                   </motion.div>

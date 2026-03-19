@@ -387,7 +387,7 @@ export default function ChatPage() {
           padding: '8px 16px',
           background: 'transparent',
           position: 'relative', zIndex: 10,
-          minHeight: 56
+          minHeight: 88
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div 
@@ -398,7 +398,7 @@ export default function ChatPage() {
               onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
               onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <img src={whiteLogo} alt="BriBox" style={{ height: 36, width: 'auto' }} />
+              <img src={whiteLogo} alt="BriBox" style={{ height: 60, width: 'auto' }} />
               <HiChevronDown style={{ fontSize: 16, color: 'var(--text-secondary)', marginTop: 2 }} />
             </div>
           </div>

@@ -79,11 +79,11 @@ export default function ChatSidebar({
         padding: '12px 0',
         margin: '0 16px',
         marginBottom: 8,
-        minHeight: 56
+        minHeight: 88
       }}>
         {isOpen ? (
           <>
-            <img src={whiteLogo} alt="BriBox" style={{ height: 40, width: 'auto', marginLeft: 0 }} />
+            <img src={whiteLogo} alt="BriBox" style={{ height: 64, width: 'auto', marginLeft: 0 }} />
             
             <button 
               onClick={onToggleSidebar}
@@ -140,7 +140,7 @@ export default function ChatSidebar({
                 <line x1="9" y1="3" x2="9" y2="21"/>
               </svg>
             ) : (
-              <img src={whiteIcon} alt="B" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+              <img src={whiteIcon} alt="B" style={{ width: 64, height: 64, objectFit: 'contain' }} />
             )}
           </button>
         )}

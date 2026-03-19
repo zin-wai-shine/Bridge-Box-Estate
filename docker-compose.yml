@@ -44,12 +44,17 @@ services:
     restart: unless-stopped
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: node:22-alpine
     container_name: bribox-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     ports:
       - "5173:5173"
+    environment:
+      - VITE_BACKEND_URL=http://backend:8080
+    command: npm run dev
     depends_on:
       - backend
     restart: unless-stopped

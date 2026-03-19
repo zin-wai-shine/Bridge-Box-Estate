@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import whiteIcon from '../assets/logo/white_icon.png'
-import whiteLogo from '../assets/logo/white_logo.png'
+import briboxLogo from '../assets/logo/bribox.svg'
 import { 
   HiPlus,
   HiMagnifyingGlass,
@@ -90,11 +89,12 @@ export default function ChatSidebar({
             <div style={{
               width: '60px',
               height: '60px',
-              backgroundImage: `url(${whiteIcon})`,
+              backgroundImage: `url(${briboxLogo})`,
               backgroundSize: 'contain',
               backgroundRepeat: 'no-repeat',
               backgroundPosition: 'left center',
-              marginLeft: 4
+              marginLeft: 4,
+              filter: 'brightness(0.85)'
             }} />
             
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -123,8 +123,9 @@ export default function ChatSidebar({
             <div style={{
               width: '40px',
               height: '40px',
-              backgroundImage: `url(${whiteIcon})`,
-              backgroundSize: 'contain',
+              backgroundImage: `url(${briboxLogo})`,
+            backgroundSize: 'contain',
+            filter: 'brightness(0.85)',
               backgroundRepeat: 'no-repeat',
               backgroundPosition: 'center',
               opacity: isHeaderHovered ? 0.3 : 1,

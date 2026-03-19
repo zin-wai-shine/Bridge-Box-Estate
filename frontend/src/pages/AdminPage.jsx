@@ -20,7 +20,7 @@ import {
   HiOutlineLightningBolt
 } from 'react-icons/hi'
 import DataTable from '../components/DataTable'
-import whiteIcon from '../assets/logo/white_icon.png'
+import briboxLogo from '../assets/logo/bribox.svg'
 import whiteLogo from '../assets/logo/white_logo.png'
 
 export default function AdminPage() {
@@ -424,11 +424,12 @@ export default function AdminPage() {
                 <div style={{
                   width: '60px',
                   height: '60px',
-                  backgroundImage: `url(${whiteIcon})`,
+                  backgroundImage: `url(${briboxLogo})`,
                   backgroundSize: 'contain',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'left center',
-                  marginLeft: 4
+                  marginLeft: 4,
+                  filter: 'brightness(0.85)' // Achieve #dadada from white svg
                 }} />
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -454,10 +455,11 @@ export default function AdminPage() {
             ) : (
               <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                 <div style={{
-                  width: '40px',
-                  height: '40px',
-                  backgroundImage: `url(${whiteIcon})`,
+                  width: '60px',
+                  height: '60px',
+                  backgroundImage: `url(${briboxLogo})`,
                   backgroundSize: 'contain',
+                  filter: 'brightness(0.85)',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center',
                   opacity: isHeaderHovered ? 0.3 : 1,

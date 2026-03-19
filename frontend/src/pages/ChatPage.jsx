@@ -395,12 +395,12 @@ export default function ChatPage() {
               onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
               onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <img src={briboxLogo} alt="BriBox" style={{ height: 32, width: 'auto', filter: 'brightness(0.85)' }} />
+              <img src={briboxLogo} alt="BriBox" style={{ height: 37, width: 'auto', filter: 'brightness(0.8549)' }} />
               <span style={{ 
-                fontSize: '18px', 
+                fontSize: '16px', 
                 fontWeight: '800', 
                 color: '#dadada', 
-                letterSpacing: '0.5px'
+                letterSpacing: '1px'
               }}>bribox</span>
             </div>
           </div>

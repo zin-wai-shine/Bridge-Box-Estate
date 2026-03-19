@@ -423,19 +423,19 @@ export default function AdminPage() {
               <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '45px',
+                    height: '45px',
                     backgroundImage: `url(${briboxLogo})`,
                     backgroundSize: 'contain',
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'left center',
-                    filter: 'brightness(0.85)'
+                    filter: 'brightness(0.8549)'
                   }} />
                   <span style={{ 
-                    fontSize: '18px', 
+                    fontSize: '16px', 
                     fontWeight: '800', 
                     color: '#dadada', 
-                    letterSpacing: '0.5px'
+                    letterSpacing: '1px'
                   }}>bribox</span>
                 </div>
                 

@@ -75,18 +75,18 @@ export default function ChatSidebar({
         onMouseEnter={() => setIsHeaderHovered(true)}
         onMouseLeave={() => setIsHeaderHovered(false)}
         style={{ 
-          padding: isOpen ? '24px 20px 12px' : '24px 0 12px',
+          padding: isOpen ? '16px 12px 12px' : '16px 0 12px',
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           alignItems: isOpen ? 'flex-start' : 'center',
-          minHeight: isOpen ? 100 : 120,
+          minHeight: isOpen ? 80 : 100,
           cursor: 'pointer'
         }}
       >
         {isOpen ? (
           <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <div style={{
                 width: '45px',
                 height: '45px',
@@ -170,7 +170,7 @@ export default function ChatSidebar({
       </div>
 
       {/* Main Navigation */}
-      <div style={{ padding: isOpen ? '0 12px 10px' : '0' }}>
+      <div style={{ padding: isOpen ? '0 8px 10px' : '0' }}>
         <NavButton 
           icon={HiPlus} 
           label="New chat" 
@@ -206,7 +206,7 @@ export default function ChatSidebar({
       </div>
 
       {/* Session List */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: isOpen ? '0 12px 20px' : '0', marginTop: 10 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isOpen ? '0 8px 20px' : '0', marginTop: 10 }}>
         {isOpen ? (
           <>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', padding: '0 12px 8px' }}>

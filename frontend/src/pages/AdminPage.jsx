@@ -410,18 +410,18 @@ export default function AdminPage() {
             onMouseEnter={() => setIsHeaderHovered(true)}
             onMouseLeave={() => setIsHeaderHovered(false)}
             style={{ 
-              padding: sidebarOpen ? '24px 20px 12px' : '24px 0 12px',
+              padding: sidebarOpen ? '16px 12px 12px' : '16px 0 12px',
               position: 'relative',
               display: 'flex',
               flexDirection: 'column',
               alignItems: sidebarOpen ? 'flex-start' : 'center',
-              minHeight: sidebarOpen ? 100 : 120,
+              minHeight: sidebarOpen ? 80 : 100,
               cursor: 'pointer'
             }}
           >
             {sidebarOpen ? (
               <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <div style={{
                     width: '45px',
                     height: '45px',

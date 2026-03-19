@@ -88,9 +88,9 @@ export default function ChatSidebar({
         {isOpen ? (
           <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
             <div style={{
-              width: '180px',
+              width: '60px',
               height: '60px',
-              backgroundImage: `url(${whiteLogo})`,
+              backgroundImage: `url(${whiteIcon})`,
               backgroundSize: 'contain',
               backgroundRepeat: 'no-repeat',
               backgroundPosition: 'left center',

@@ -432,11 +432,11 @@ export default function AdminPage() {
                     filter: 'brightness(0.85)'
                   }} />
                   <span style={{ 
-                    fontSize: '14px', 
+                    fontSize: '18px', 
                     fontWeight: '800', 
                     color: '#dadada', 
                     letterSpacing: '0.5px'
-                  }}>BRIBOX</span>
+                  }}>bribox</span>
                 </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

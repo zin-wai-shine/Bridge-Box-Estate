@@ -397,11 +397,11 @@ export default function ChatPage() {
             >
               <img src={briboxLogo} alt="BriBox" style={{ height: 32, width: 'auto', filter: 'brightness(0.85)' }} />
               <span style={{ 
-                fontSize: '14px', 
+                fontSize: '18px', 
                 fontWeight: '800', 
                 color: '#dadada', 
                 letterSpacing: '0.5px'
-              }}>BRIBOX</span>
+              }}>bribox</span>
             </div>
           </div>
 

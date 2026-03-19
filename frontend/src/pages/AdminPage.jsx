@@ -432,7 +432,7 @@ export default function AdminPage() {
                     filter: 'brightness(0.85)'
                   }} />
                   <span style={{ 
-                    fontSize: '18px', 
+                    fontSize: '14px', 
                     fontWeight: '800', 
                     color: '#dadada', 
                     letterSpacing: '0.5px'

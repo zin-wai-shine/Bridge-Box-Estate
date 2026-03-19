@@ -421,23 +421,23 @@ export default function AdminPage() {
           >
             {sidebarOpen ? (
               <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
-                <div style={{
-                  width: '60px',
-                  height: '60px',
-                  backgroundImage: `url(${briboxLogo})`,
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'left center',
-                  marginLeft: 4,
-                  filter: 'brightness(0.85)' // Achieve #dadada from white svg
-                }} />
-                <span style={{ 
-                  fontSize: '22px', 
-                  fontWeight: '800', 
-                  color: '#dadada', 
-                  letterSpacing: '1px',
-                  marginLeft: '8px'
-                }}>BRIBOX</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    backgroundImage: `url(${briboxLogo})`,
+                    backgroundSize: 'contain',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'left center',
+                    filter: 'brightness(0.85)'
+                  }} />
+                  <span style={{ 
+                    fontSize: '18px', 
+                    fontWeight: '800', 
+                    color: '#dadada', 
+                    letterSpacing: '0.5px'
+                  }}>BRIBOX</span>
+                </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <button 

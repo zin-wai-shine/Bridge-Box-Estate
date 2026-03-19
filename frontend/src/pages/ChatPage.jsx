@@ -391,16 +391,16 @@ export default function ChatPage() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div 
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}
               onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
               onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <img src={briboxLogo} alt="BriBox" style={{ height: 40, width: 'auto', filter: 'brightness(0.85)' }} />
+              <img src={briboxLogo} alt="BriBox" style={{ height: 32, width: 'auto', filter: 'brightness(0.85)' }} />
               <span style={{ 
-                fontSize: '20px', 
+                fontSize: '18px', 
                 fontWeight: '800', 
                 color: '#dadada', 
-                letterSpacing: '1px'
+                letterSpacing: '0.5px'
               }}>BRIBOX</span>
             </div>
           </div>

@@ -2,29 +2,23 @@ import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  HiOutlineHome, 
-  HiOutlineClipboardList, 
-  HiOutlineCheckCircle, 
-  HiOutlineShieldExclamation,
-  HiOutlineLightningBolt, 
-  HiOutlineRefresh, 
-  HiOutlinePlus,
-  HiOutlineExternalLink, 
-  HiOutlineTrendingUp,
-  HiOutlineChevronRight, 
-  HiOutlinePhotograph,
-  HiOutlineChatAlt,
-  HiOutlineLogout,
-  HiDotsVertical,
-  HiViewGrid,
-  HiArrowUp
+import {
+  HiOutlineHome, HiOutlineClipboardCheck, HiOutlineShieldCheck,
+  HiOutlinePencil, HiOutlineCheck, HiOutlineX, HiOutlineTrash,
+  HiOutlineExternalLink, HiOutlineChat, HiOutlineLogout,
+  HiOutlinePlus, HiOutlineRefresh, HiOutlineLink,
+  HiOutlineAdjustments, HiOutlineScale, HiOutlineSparkles
 } from 'react-icons/hi'
 import {
   getDashboardStats, getDraftListings, getActiveListings, getPermissions,
   updateProperty, approveProperty, deleteProperty,
   approvePermission, denyPermission, scrapeProperty, refineDraft, publishProperty
 } from '../services/api'
+import { 
+  HiOutlineMicrophone, HiArrowUp, HiPlus, 
+  HiOutlineAdjustments as HiAdjustments,
+  HiOutlineLightningBolt
+} from 'react-icons/hi'
 import DataTable from '../components/DataTable'
 
 export default function AdminPage() {
@@ -46,7 +40,7 @@ export default function AdminPage() {
   const [scraperLog, setScraperLog] = useState([
     { role: 'ai', content: 'Ready to bridge listings. Paste a property URL or upload photos below.' }
   ])
-  const scraperEndRef = useRef(null)
+  const scraperEndRef = React.useRef(null)
   
   const scrollToBottom = () => {
     scraperEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -96,12 +90,6 @@ export default function AdminPage() {
     loadData()
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('bribox_token')
-    localStorage.removeItem('bribox_user')
-    navigate('/login')
-  }
-
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files)
     setPendingFiles(prev => [...prev, ...files])
@@ -132,14 +120,17 @@ export default function AdminPage() {
     setFilePreviews([])
     setScrapeLoading(true)
     
+    // 1. CLEANUP PREVIOUS FAILURES
     setScraperLog(prev => prev.filter(l => !l.content?.includes('❌')))
     
+    // 2. USER PASTE / UPLOAD
     setScraperLog(prev => [...prev, { 
       role: 'user', 
       content: url || "No URL provided", 
       hasImages: currentFiles.length > 0 
     }])
     
+    // 3. VISUAL PROGRESS CARD
     setScraperLog(prev => [...prev, { 
       role: 'ai', 
       type: 'progress', 
@@ -151,10 +142,12 @@ export default function AdminPage() {
     }])
     
     try {
+      // Use FormData for hybrid upload
       const formData = new FormData()
       if (url) formData.append('source_url', url)
       currentFiles.forEach(file => formData.append('images', file))
 
+      // Update API service call to handle FormData (or just use axios here for simplicity)
       const token = localStorage.getItem('bribox_token')
       const resp = await axios.post('/api/v1/bridge/hybrid', formData, {
         headers: { 
@@ -165,6 +158,7 @@ export default function AdminPage() {
       
       const property = resp.data.property
 
+      // Simulate step transitions
       await new Promise(r => setTimeout(r, 1000))
       updateLastLogStep(0, 'success')
       updateLastLogStep(1, 'loading')
@@ -176,6 +170,7 @@ export default function AdminPage() {
       await new Promise(r => setTimeout(r, 1500))
       updateLastLogStep(2, 'success')
 
+      // FINAL RESULT CARD
       setScraperLog(prev => [...prev, { 
         role: 'ai', 
         type: 'result',
@@ -195,9 +190,7 @@ export default function AdminPage() {
       const newLog = [...prev]
       const last = newLog[newLog.length - 1]
       if (last.type === 'progress') {
-        const steps = [...last.steps]
-        steps[stepIdx].status = status
-        last.steps = steps
+        last.steps[stepIdx].status = status
       }
       return newLog
     })
@@ -233,6 +226,13 @@ export default function AdminPage() {
     }
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('bribox_token')
+    localStorage.removeItem('bribox_user')
+    navigate('/login')
+  }
+
+  // Column Definitions for AG-Grid (Google AI Studio Theme)
   const draftColumns = [
     { 
       field: 'address', 
@@ -240,8 +240,8 @@ export default function AdminPage() {
       flex: 3, 
       cellRenderer: (params) => (
         <div className="flex flex-col py-2">
-          <span style={{ color: '#1a1a1a', fontWeight: 600, fontSize: 13 }}>{params.data.address}</span>
-          <span style={{ color: '#868e96', fontSize: 11 }}>{params.data.city}, {params.data.state}</span>
+          <span style={{ color: '#8ab4f8', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>{params.data.address}</span>
+          <span style={{ color: '#9aa0a6', fontSize: 11 }}>{params.data.city}, {params.data.state}</span>
         </div>
       ) 
     },
@@ -249,380 +249,727 @@ export default function AdminPage() {
       field: 'price', 
       headerName: 'PRICE', 
       cellRenderer: (params) => (
-        <div style={{ color: '#1a1a1a', fontWeight: 500 }}>${params.value?.toLocaleString()}</div>
+        <div style={{ color: '#e8eaed', fontWeight: 400 }}>${params.value?.toLocaleString()}</div>
       )
     },
     { 
+      headerName: 'BEDS / BATHS', 
+      cellRenderer: (params) => (
+        <div style={{ color: '#9aa0a6' }}>{params.data.bedrooms}bd / {params.data.bathrooms}ba</div>
+      )
+    },
+    { 
+      field: 'status', 
       headerName: 'STATUS', 
       cellRenderer: (params) => (
         <span style={{ 
-          background: '#fff9db', color: '#f08c00', padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700, textTransform: 'uppercase'
-        }}>{params.data.status}</span>
+          background: 'rgba(255,255,255,0.05)', color: '#9aa0a6', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 500
+        }}>{params.value}</span>
       ) 
     },
     {
       headerName: 'ACTIONS',
+      minWidth: 160,
       cellRenderer: (params) => (
-        <div className="flex gap-4 h-full items-center">
-          <HiOutlineCheckCircle 
-            className="cursor-pointer hover:text-[var(--success)]" 
-            style={{ fontSize: 18, color: '#868e96' }} 
-            onClick={() => handleApprove(params.data.id)}
+        <div className="flex gap-4 h-full items-center justify-end pr-4 text-[var(--text-muted)]">
+          <HiOutlinePencil 
+            className="cursor-pointer hover:text-[var(--text-primary)] transition-colors" 
+            style={{ fontSize: 18 }} 
+            onClick={() => setEditProp(params.data)}
+            title="Edit"
           />
-          <HiOutlinePhotograph 
-            className="cursor-pointer hover:text-[var(--danger)]" 
-            style={{ fontSize: 18, color: '#868e96' }} 
+          <HiOutlineCheck 
+            className="cursor-pointer hover:text-[var(--success)] transition-colors" 
+            style={{ fontSize: 18 }} 
+            onClick={() => handleApprove(params.data.id)}
+            title="Approve"
+          />
+          <HiOutlineTrash 
+            className="cursor-pointer hover:text-[var(--danger)] transition-colors" 
+            style={{ fontSize: 18 }} 
             onClick={() => handleDelete(params.data.id)}
+            title="Delete"
           />
         </div>
       )
     }
   ]
 
-  const navItems = [
-    { id: 'dashboard', label: 'Overview', icon: HiViewGrid },
-    { id: 'drafts', label: 'Drafts', icon: HiOutlineClipboardList },
-    { id: 'active', label: 'Active', icon: HiOutlineCheckCircle },
-    { id: 'permissions', label: 'Permissions', icon: HiOutlineShieldExclamation },
-    { id: 'scrape', label: 'Bridge Scraper', icon: HiOutlineLightningBolt },
+  const activeColumns = [
+    { 
+      field: 'address', 
+      headerName: 'PROJECT', 
+      flex: 3, 
+      cellRenderer: (params) => (
+        <div className="flex flex-col py-2">
+          <span style={{ color: '#8ab4f8', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>{params.data.address}</span>
+          <span style={{ color: '#9aa0a6', fontSize: 11 }}>{params.data.city}, {params.data.state}</span>
+        </div>
+      ) 
+    },
+    { 
+      field: 'price', 
+      headerName: 'PRICE', 
+      cellRenderer: (params) => (
+        <div style={{ color: '#e8eaed', fontWeight: 400 }}>${params.value?.toLocaleString()}</div>
+      )
+    },
+    { 
+      headerName: 'BEDS / BATHS', 
+      cellRenderer: (params) => (
+        <div style={{ color: '#9aa0a6' }}>{params.data.bedrooms}bd / {params.data.bathrooms}ba</div>
+      )
+    },
+    { 
+      field: 'square_footage', 
+      headerName: 'SQUARE FOOTAGE', 
+      cellRenderer: (params) => (
+        <div style={{ color: '#9aa0a6' }}>{params.value?.toLocaleString()} sq.ft</div>
+      )
+    },
+    { 
+      field: 'status', 
+      headerName: 'STATUS', 
+      cellRenderer: (params) => (
+        <span style={{ 
+          background: 'rgba(59, 130, 246, 0.1)', color: '#8ab4f8', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 500
+        }}>{params.value}</span>
+      ) 
+    },
   ]
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+  const permissionColumns = [
+    { field: 'property_id', headerName: 'PROPERTY ID', cellStyle: { color: '#9aa0a6' } },
+    { field: 'owner_user_id', headerName: 'OWNER ID', cellStyle: { color: '#9aa0a6' } },
+    { field: 'status', headerName: 'STATUS', cellRenderer: (params) => (
+      <span style={{ 
+        background: params.value === 'Approved' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(255,255,255,0.05)', 
+        color: params.value === 'Approved' ? '#4ade80' : '#9aa0a6', 
+        padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 500
+      }}>{params.value}</span>
+    ) },
+    { 
+      field: 'chat_log_snippet', 
+      headerName: 'REQUEST CONTEXT', 
+      flex: 2, 
+      cellRenderer: (params) => (
+        <span style={{ color: '#9aa0a6', fontStyle: 'italic', fontSize: 12 }}>{params.value ? `"${params.value}"` : '-'}</span>
+      ) 
+    },
+    {
+      headerName: 'ACTIONS',
+      cellRenderer: (params) => params.data.status === 'Pending' ? (
+        <div className="flex gap-4 h-full items-center">
+           <HiOutlineCheck 
+            className="cursor-pointer hover:text-[var(--success)] transition-colors" 
+            style={{ fontSize: 18, color: '#9aa0a6' }} 
+            onClick={() => handlePermApprove(params.data.id)}
+            title="Approve"
+          />
+          <HiOutlineX 
+            className="cursor-pointer hover:text-[var(--danger)] transition-colors" 
+            style={{ fontSize: 18, color: '#9aa0a6' }} 
+            onClick={() => handlePermDeny(params.data.id)}
+            title="Deny"
+          />
+        </div>
+      ) : '-'
     }
-  }
+  ]
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
-  }
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard', icon: HiOutlineHome },
+    { id: 'drafts', label: 'Draft Listings', icon: HiOutlineClipboardCheck },
+    { id: 'active', label: 'Active Listings', icon: HiOutlineExternalLink },
+    { id: 'permissions', label: 'Permissions', icon: HiOutlineShieldCheck },
+    { id: 'scrape', label: 'Bridge Scraper', icon: HiOutlineLink },
+  ]
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#f9fafb', color: '#1a1a1a', fontFamily: "'Inter', sans-serif", overflow: 'hidden' }}>
-      {/* Premium Minimalist Sidebar */}
-      <motion.nav 
-        initial={false}
-        animate={{ width: sidebarOpen ? 280 : 80 }}
-        style={{ 
-          background: 'white', 
-          borderRight: '1px solid #f1f3f5',
-          display: 'flex', 
-          flexDirection: 'column',
-          position: 'relative',
-          zIndex: 50,
-          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-        }}
-      >
-        <div style={{ padding: '32px 24px', display: 'flex', alignItems: 'center', justifyContent: sidebarOpen ? 'space-between' : 'center', marginBottom: 20 }}>
-          {sidebarOpen ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ fontWeight: 800, fontSize: 18, color: '#1a1a1a', letterSpacing: -0.5, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 24, height: 24, background: '#1a1a1a', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12 }}>B</div>
-              BriBox Admin
-            </motion.div>
-          ) : (
-            <div style={{ width: 32, height: 32, background: '#1a1a1a', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800 }}>B</div>
-          )}
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: '#868e96', cursor: 'pointer', padding: 4 }}>
-             <HiViewGrid style={{ transform: sidebarOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} />
-          </button>
-        </div>
-
-        <div style={{ flex: 1, padding: '0 12px' }}>
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id)}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: sidebarOpen ? 'flex-start' : 'center',
-                gap: 12,
-                padding: '12px 16px',
-                marginBottom: 4,
-                background: 'transparent',
-                border: 'none',
-                color: tab === item.id ? '#1a1a1a' : '#868e96',
-                cursor: 'pointer',
-                borderRadius: 8,
-                transition: 'all 0.2s',
-                position: 'relative',
-                fontWeight: tab === item.id ? 600 : 500,
-                fontSize: 14
-              }}
-              onMouseOver={(e) => {
-                if (tab !== item.id) e.currentTarget.style.background = '#f8f9fa'
-              }}
-              onMouseOut={(e) => {
-                if (tab !== item.id) e.currentTarget.style.background = 'transparent'
-              }}
-            >
-              {tab === item.id && (
-                <motion.div 
-                  layoutId="activeTabIndicator" 
-                  style={{ position: 'absolute', left: 0, top: 12, bottom: 12, width: 2, background: '#1a1a1a', borderRadius: 2 }} 
-                />
-              )}
-              <item.icon style={{ fontSize: 20, flexShrink: 0 }} />
-              {sidebarOpen && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{item.label}</motion.span>}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ marginTop: 'auto', padding: '24px' }}>
-             {sidebarOpen && (
-               <div style={{ padding: '24px 16px', borderRadius: 16, background: '#f8f9fa' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                     <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#dee2e6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#495057', fontWeight: 700 }}>{user.email[0].toUpperCase()}</div>
-                     <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a1a' }}>{user.email.split('@')[0]}</div>
-                        <div style={{ fontSize: 11, color: '#868e96', textTransform: 'uppercase' }}>{user.role}</div>
-                     </div>
+    <div className="page-container" style={{ background: 'var(--bg-primary)', height: '100vh' }}>
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        {/* Sidebar */}
+        <motion.nav 
+          initial={false}
+          animate={{ width: sidebarOpen ? 280 : 60 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          style={{
+            height: '100%',
+            background: '#090909',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRight: 'none',
+            zIndex: 20,
+            overflow: 'hidden',
+          }}
+        >
+          {/* Sidebar Header */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: sidebarOpen ? 'space-between' : 'center', 
+            padding: '12px 0',
+            margin: '0 16px',
+            marginBottom: 8,
+            minHeight: 56
+          }}>
+            {sidebarOpen ? (
+              <>
+                <div style={{
+                  width: 24, height: 24, borderRadius: '6px',
+                  background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 14, fontWeight: 900, color: 'black'
+                }}>
+                  B
+                </div>
+                <button 
+                  onClick={() => setSidebarOpen(false)}
+                  style={{
+                    background: 'transparent', border: 'none', color: 'var(--text-secondary)',
+                    fontSize: 20, cursor: 'pointer', padding: 8, borderRadius: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                  onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/>
+                  </svg>
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                onMouseEnter={() => setIsToggleHovered(true)}
+                onMouseLeave={() => setIsToggleHovered(false)}
+                style={{
+                  background: 'transparent', border: 'none', color: 'var(--text-secondary)',
+                  fontSize: 20, cursor: 'pointer', padding: 8, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'background 0.2s', width: 40, height: 40
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                {isToggleHovered ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/>
+                  </svg>
+                ) : (
+                  <div style={{
+                    width: 24, height: 24, borderRadius: '6px',
+                    background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 14, fontWeight: 900, color: 'black'
+                  }}>
+                    B
                   </div>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Navigation Items */}
+          <div style={{ padding: sidebarOpen ? '0 12px 10px' : '0 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {tabs.map(t => (
+              <motion.button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                whileHover={{ x: sidebarOpen ? 4 : 0 }}
+                transition={{ duration: 0.2 }}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: sidebarOpen ? 'flex-start' : 'center',
+                  gap: 12, padding: '10px 16px', minHeight: 44,
+                  borderRadius: 10, border: 'none', cursor: 'pointer',
+                  background: tab === t.id ? 'var(--bg-input)' : 'transparent',
+                  color: tab === t.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  fontSize: 14, fontWeight: tab === t.id ? 600 : 500,
+                  fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.2s',
+                  width: '100%'
+                }}
+                onMouseOver={(e) => { if (tab !== t.id) e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+                onMouseOut={(e) => { if (tab !== t.id) e.currentTarget.style.background = 'transparent' }}
+                title={!sidebarOpen ? t.label : ''}
+              >
+                <t.icon style={{ fontSize: 20, color: tab === t.id ? 'var(--accent-primary)' : 'inherit', flexShrink: 0 }} />
+                {sidebarOpen && <span>{t.label}</span>}
+              </motion.button>
+            ))}
+          </div>
+
+          {/* User Info & Header Actions (Moved to sidebar bottom if desired, but I'll skip for now to keep it clean) */}
+          <div style={{ marginTop: 'auto', padding: '16px' }}>
+             {sidebarOpen && (
+               <div style={{ padding: '8px 4px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{user.email.split('@')[0]}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{user.role}</div>
                   
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
                     <Link to="/chat" 
                       style={{ 
-                        textDecoration: 'none', color: '#1a1a1a', flex: 1,
-                        fontSize: 12, fontWeight: 600, padding: '10px', borderRadius: 10,
-                        background: 'white', border: '1px solid #f1f3f5', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                        textDecoration: 'none', color: 'var(--text-secondary)', flex: 1,
+                        fontSize: 12, fontWeight: 500, padding: '8px', borderRadius: 8,
+                        background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
                       }}
                     >
-                      <HiOutlineChatAlt size={14} />
+                      <HiOutlineChat /> Chat
                     </Link>
                     <button onClick={handleLogout} 
                       style={{ 
-                        background: 'white', border: '1px solid #f1f3f5', color: '#1a1a1a', flex: 1,
-                        fontSize: 12, fontWeight: 600, padding: '10px', borderRadius: 10,
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                        background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-secondary)', flex: 1,
+                        fontSize: 12, fontWeight: 500, padding: '8px', borderRadius: 8,
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
                       }}
                     >
-                      <HiOutlineLogout size={14} />
+                      <HiOutlineLogout /> Exit
                     </button>
                   </div>
                </div>
              )}
-        </div>
-      </motion.nav>
+          </div>
+        </motion.nav>
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, overflowY: 'auto', padding: '48px 64px', background: '#f9fafb' }}>
-        <AnimatePresence mode="wait">
-          {tab === 'dashboard' && (
-            <motion.div key="dashboard" variants={containerVariants} initial="hidden" animate="show" exit="hidden">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
-                <div>
-                  <h2 style={{ fontSize: 32, fontWeight: 700, color: '#1a1a1a', letterSpacing: -1, marginBottom: 8 }}>Overview</h2>
-                  <p style={{ color: '#868e96', fontSize: 14 }}>Real-time statistics across your property estate.</p>
-                </div>
-                <button 
-                  onClick={loadData} 
-                  disabled={loading}
-                  style={{
-                    background: 'white', border: '1px solid #f1f3f5', color: '#1a1a1a',
-                    fontSize: 13, fontWeight: 500, padding: '10px 20px', borderRadius: 10,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <HiOutlineRefresh className={loading ? 'animate-spin' : ''} style={{ fontSize: 14 }} /> Refresh
-                </button>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
-                {[
-                  { label: 'Draft Listings', value: stats.draft_listings, trend: '+4 this week', icon: HiOutlineClipboardList },
-                  { label: 'Active Listings', value: stats.active_listings, trend: '+12.5% vs last week', icon: HiOutlineCheckCircle },
-                  { label: 'Pending Requests', value: stats.pending_permissions, trend: '2 urgent', icon: HiOutlineShieldExclamation }
-                ].map((stat, i) => (
-                  <motion.div 
-                    key={i}
-                    variants={itemVariants}
-                    style={{ 
-                      background: 'white', 
-                      padding: '24px', 
-                      borderRadius: 16, 
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.02)', 
-                      border: '1px solid #f1f3f5',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 12
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ color: '#868e96', fontSize: 12, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>{stat.label}</div>
-                      <stat.icon style={{ color: '#adb5bd', fontSize: 16 }} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 36, fontWeight: 300, color: '#1a1a1a', letterSpacing: -1 }}>{stat.value}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#40c057', fontSize: 11, fontWeight: 600, marginTop: 4 }}>
-                        <HiOutlineTrendingUp size={12} />
-                        {stat.trend}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {tab === 'active' && (
-            <motion.div key="active" variants={containerVariants} initial="hidden" animate="show" exit="hidden">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
-                <div>
-                  <h2 style={{ fontSize: 32, fontWeight: 700, color: '#1a1a1a', letterSpacing: -1, marginBottom: 8 }}>Active Listings</h2>
-                  <p style={{ color: '#868e96', fontSize: 14 }}>Managing {actives.length} premium property listings.</p>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {actives.length > 0 ? actives.map((item, i) => (
-                  <motion.div
-                    key={item.id}
-                    variants={itemVariants}
-                    whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.06)' }}
+        {/* Main Content */}
+        <main style={{ flex: 1, overflowY: 'auto', padding: 32 }}>
+          <AnimatePresence mode="wait">
+            {/* Dashboard Tab */}
+            {tab === 'dashboard' && (
+              <motion.div key="dashboard" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                  <h2 style={{ fontSize: 24, fontWeight: 700 }}>Dashboard</h2>
+                  <button 
+                    onClick={loadData} 
+                    disabled={loading}
                     style={{
-                      background: 'white', 
-                      padding: '16px 20px', 
-                      borderRadius: 12,
-                      border: '1px solid #f1f3f5', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 20, 
-                      transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                      background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-secondary)',
+                      fontSize: 12, fontWeight: 500, padding: '8px 16px', borderRadius: 8,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                      transition: 'all 0.2s'
                     }}
+                    onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+                    onMouseOut={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
                   >
-                    <div style={{ width: 56, height: 56, borderRadius: 10, background: '#f8f9fa', overflow: 'hidden', border: '1px solid #f1f3f5' }}>
-                      {item.image_url ? <img src={item.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#adb5bd' }}><HiOutlinePhotograph size={24} /></div>}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 15, color: '#1a1a1a', marginBottom: 2 }}>{item.title || item.property_name || 'Listing #' + item.id}</div>
-                      <div style={{ color: '#868e96', fontSize: 12, display: 'flex', gap: 12 }}><span>{item.location || 'N/A'}</span><span style={{ color: '#adb5bd' }}>•</span><span>{item.price ? '$' + item.price.toLocaleString() : 'Negotiable'}</span></div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-                       <div style={{ padding: '4px 10px', borderRadius: 6, background: '#e6fcf5', color: '#099268', fontSize: 10, fontWeight: 700, letterSpacing: 0.5 }}>ACTIVE</div>
-                       <div style={{ color: '#adb5bd', cursor: 'pointer', padding: 8, borderRadius: 8 }} onMouseOver={(e) => e.currentTarget.style.background = '#f8f9fa'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                         <HiDotsVertical size={18} />
-                       </div>
-                    </div>
-                  </motion.div>
-                )) : (
-                  <motion.div variants={itemVariants} style={{ textAlign: 'center', padding: '80px 0', color: '#868e96' }}>
-                     <HiOutlineHome size={64} style={{ margin: '0 auto', opacity: 0.1, marginBottom: 24 }} />
-                     <h3 style={{ fontSize: 20, color: '#1a1a1a', fontWeight: 600, marginBottom: 8 }}>Your bridge is clear.</h3>
-                     <p>Paste a URL to begin populating your estate.</p>
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-          )}
-
-          {tab === 'drafts' && (
-            <motion.div key="drafts" variants={containerVariants} initial="hidden" animate="show">
-               <h2 style={{ fontSize: 32, fontWeight: 700, color: '#1a1a1a', letterSpacing: -1, marginBottom: 40 }}>Draft Listings</h2>
-               <div style={{ background: 'white', padding: 32, borderRadius: 20, border: '1px solid rgba(0,0,0,0.02)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                  <DataTable columns={draftColumns} data={drafts} isLoading={loading} theme="light" />
-               </div>
-            </motion.div>
-          )}
-
-          {tab === 'permissions' && (
-            <motion.div key="permissions" variants={containerVariants} initial="hidden" animate="show">
-               <h2 style={{ fontSize: 32, fontWeight: 700, color: '#1a1a1a', letterSpacing: -1, marginBottom: 40 }}>Permission Requests</h2>
-               <div style={{ background: 'white', padding: 32, borderRadius: 20, border: '1px solid rgba(0,0,0,0.02)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                  <DataTable columns={[
-                    { field: 'property_id', headerName: 'ID' },
-                    { field: 'owner_user_id', headerName: 'OWNER' },
-                    { field: 'status', headerName: 'STATUS' },
-                    { 
-                      headerName: 'ACTIONS',
-                      cellRenderer: (p) => p.data.status === 'Pending' ? (
-                        <div className="flex gap-4">
-                          <button onClick={() => handlePermApprove(p.data.id)} style={{ color: '#099268', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>Approve</button>
-                          <button onClick={() => handlePermDeny(p.data.id)} style={{ color: '#e03131', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>Deny</button>
-                        </div>
-                      ) : '-'
-                    }
-                  ]} data={permissions} isLoading={loading} theme="light" />
-               </div>
-            </motion.div>
-          )}
-
-          {tab === 'scrape' && (
-            <motion.div key="scrape" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ height: 'calc(100vh - 96px)', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ padding: '12px 0 24px 0', borderBottom: '1px solid #f1f3f5', backdropFilter: 'blur(10px)', background: 'rgba(249, 250, 251, 0.8)', position: 'sticky', top: 0, zIndex: 20 }}>
-                <h2 style={{ fontSize: 32, fontWeight: 700, color: '#1a1a1a', letterSpacing: -1 }}>Bridge Scraper</h2>
-                <p style={{ color: '#868e96', fontSize: 13, marginTop: 4 }}>AI-powered property extraction and multi-platform publishing.</p>
-              </div>
-
-              <div style={{ flex: 1, overflowY: 'auto', padding: '32px 0', display: 'flex', flexDirection: 'column', gap: 32 }}>
-                <div style={{ maxWidth: 800, margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: 40 }}>
-                  {scraperLog.map((log, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', alignItems: log.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                      <div style={{ maxWidth: '85%', padding: log.role === 'user' ? '12px 20px' : '0', background: log.role === 'user' ? '#f1f3f5' : 'transparent', borderRadius: 20, color: '#1a1a1a', fontSize: 15, lineHeight: 1.6 }}>
-                        {log.role === 'ai' ? (
-                          <div style={{ display: 'flex', gap: 16 }}>
-                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4 }}><div style={{ width: 12, height: 12, borderRadius: '50%', background: 'white' }} /></div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                              {log.type === 'progress' && (
-                                <div style={{ background: 'white', border: '1px solid #f1f3f5', padding: 24, borderRadius: 20, width: 320, display: 'flex', flexDirection: 'column', gap: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                                  {log.steps.map((s, idx) => (
-                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                      {s.status === 'success' ? <HiOutlineCheckCircle style={{ color: '#099268', fontSize: 18 }} /> : s.status === 'loading' ? <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #1a1a1a', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #f1f3f5' }} />}
-                                      <span style={{ fontSize: 13, color: s.status === 'pending' ? '#adb5bd' : '#495057' }}>{s.label}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                              {log.type === 'result' && log.data && (
-                                <div style={{ background: 'white', borderRadius: 20, border: '1px solid #f1f3f5', overflow: 'hidden', maxWidth: 440, boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                                  {log.images && log.images.length > 0 && <img src={log.images[0].url} style={{ width: '100%', height: 240, objectFit: 'cover' }} />}
-                                  <div style={{ padding: 20 }}>
-                                    <div style={{ fontSize: 10, fontWeight: 700, color: '#adb5bd', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Premium Bridge Result</div>
-                                    <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', marginBottom: 8, letterSpacing: -0.5 }}>{log.data.address}</div>
-                                    <div style={{ fontSize: 13, color: '#868e96', marginBottom: 20, lineHeight: 1.5 }}>{log.data.description}</div>
-                                    <div style={{ display: 'flex', gap: 12 }}>
-                                      <button onClick={() => { loadData(); alert('Saved to Drafts') }} style={{ flex: 1, background: '#1a1a1a', color: 'white', border: 'none', padding: '10px', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Save Draft</button>
-                                      <button style={{ flex: 1, background: '#f8f9fa', color: '#1a1a1a', border: '1px solid #f1f3f5', padding: '10px', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Push Live</button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                              {!log.type && <div>{log.content}</div>}
-                            </div>
-                          </div>
-                        ) : log.content}
-                      </div>
-                    </motion.div>
-                  ))}
-                  <div ref={scraperEndRef} />
+                    <HiOutlineRefresh className={loading ? 'animate-spin' : ''} style={{ fontSize: 16 }} /> Refresh
+                  </button>
                 </div>
-              </div>
-
-              <div style={{ padding: '24px 0 0 0', position: 'sticky', bottom: 0, background: '#f9fafb' }}>
-                <div style={{ maxWidth: 800, margin: '0 auto', background: 'white', padding: '16px 20px', borderRadius: 24, display: 'flex', flexDirection: 'column', minHeight: 120, border: '1px solid #f1f3f5', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                  <textarea placeholder="Paste listing URL..." value={scrapeUrl} onChange={e => setScrapeUrl(e.target.value)} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', fontSize: 16, resize: 'none', flex: 1 }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                       <label style={{ cursor: 'pointer' }}><HiOutlinePlus style={{ color: '#868e96' }} /><input type="file" multiple hidden onChange={handleFileChange} /></label>
-                       <HiOutlineLightningBolt style={{ color: '#868e96' }} />
-                    </div>
-                    <button onClick={handleScrape} style={{ background: '#1a1a1a', color: 'white', width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer' }}><HiArrowUp /></button>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
+                  <div className="metric-card" style={{ padding: 32, border: 'none', boxShadow: 'none' }}>
+                    <div className="metric-value" style={{ fontSize: 40, color: 'var(--text-primary)' }}>{stats.draft_listings}</div>
+                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 11, color: 'var(--text-muted)' }}>Draft Listings</div>
+                  </div>
+                  <div className="metric-card" style={{ padding: 32, border: 'none', boxShadow: 'none' }}>
+                    <div className="metric-value" style={{ fontSize: 40, color: 'var(--accent-primary)' }}>{stats.active_listings}</div>
+                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 11, color: 'var(--text-muted)' }}>Active Listings</div>
+                  </div>
+                  <div className="metric-card" style={{ padding: 32, border: 'none', boxShadow: 'none' }}>
+                    <div className="metric-value" style={{ fontSize: 40, color: 'var(--text-primary)' }}>{stats.pending_permissions}</div>
+                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 11, color: 'var(--text-muted)' }}>Pending Permissions</div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
+              </motion.div>
+            )}
+
+            {/* Drafts Tab */}
+            {tab === 'drafts' && (
+              <motion.div key="drafts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}>
+                <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Draft Listings</h2>
+                <DataTable columns={draftColumns} data={drafts} isLoading={loading} />
+              </motion.div>
+            )}
+
+            {/* Active Tab */}
+            {tab === 'active' && (
+              <motion.div key="active" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}>
+                <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Active Listings</h2>
+                <DataTable columns={activeColumns} data={actives} isLoading={loading} />
+              </motion.div>
+            )}
+
+            {/* Permissions Tab */}
+            {tab === 'permissions' && (
+              <motion.div key="permissions" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}>
+                <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Permission Requests</h2>
+                <DataTable columns={permissionColumns} data={permissions} isLoading={loading} />
+              </motion.div>
+            )}
+
+            {/* Scrape Tab (Refined Chat Interface) */}
+            {tab === 'scrape' && (
+              <motion.div key="scrape" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
+                {/* Chat Header */}
+                <div style={{ padding: '0 0 24px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <h2 style={{ fontSize: 24, fontWeight: 700 }}>Bridge Scraper</h2>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>AI-powered property extraction and multi-platform publishing.</p>
+                </div>
+
+                {/* Messages Area */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '32px 0', display: 'flex', flexDirection: 'column', gap: 32 }}>
+                  <div style={{ maxWidth: 800, margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: 40 }}>
+                    {scraperLog.map((log, i) => (
+                      <motion.div 
+                        key={i} 
+                        initial={{ opacity: 0, y: 10 }} 
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: log.role === 'user' ? 'flex-end' : 'flex-start' }}
+                      >
+                        <div style={{ 
+                          maxWidth: '85%', 
+                          padding: log.role === 'user' ? '12px 20px' : '0',
+                          background: log.role === 'user' ? 'var(--bg-input)' : 'transparent',
+                          borderRadius: 20,
+                          color: log.role === 'user' ? 'var(--text-primary)' : '#e8eaed',
+                          fontSize: 15,
+                          lineHeight: 1.6
+                        }}>
+                          {log.role === 'ai' && (
+                             <div style={{ display: 'flex', gap: 16 }}>
+                               <div style={{ 
+                                 width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-primary)', 
+                                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4
+                               }}>
+                                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'white' }} />
+                               </div>
+                               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                 {/* 1. PROGRESS CARD TYPE */}
+                                 {log.type === 'progress' && (
+                                   <div className="glass-strong" style={{ padding: 24, width: 320, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                     {log.steps.map((s, idx) => (
+                                       <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                         {s.status === 'success' ? <HiOutlineCheck style={{ color: 'var(--success)', fontSize: 18 }} /> :
+                                          s.status === 'loading' ? <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #8ab4f8', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} /> :
+                                          <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)' }} />}
+                                         <span style={{ fontSize: 13, color: s.status === 'pending' ? '#5f6368' : '#e8eaed' }}>{s.label}</span>
+                                       </div>
+                                     ))}
+                                   </div>
+                                 )}
+
+                                 {/* 2. RESULT CARD TYPE */}
+                                 {log.type === 'result' && log.data && (
+                                   <motion.div 
+                                     initial={{ opacity: 0, scale: 0.98 }} 
+                                     animate={{ opacity: 1, scale: 1 }}
+                                     className="glass-strong" 
+                                     style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxWidth: 500, border: '1px solid rgba(255,255,255,0.1)' }}
+                                   >
+                                      {/* High-Res Image Slider (Simplified with Management) */}
+                                      {log.images && log.images.length > 0 && (
+                                        <div style={{ position: 'relative', width: '100%', height: 300, background: '#131314' }}>
+                                           <img src={log.images[0].url} alt="Property" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                           <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 8 }}>
+                                              <button style={{ background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, color: 'white', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                 <HiOutlineAdjustments /> Manage
+                                              </button>
+                                              <div style={{ background: 'var(--accent-primary)', color: 'white', padding: '6px 10px', borderRadius: 8, fontSize: 10, fontWeight: 700 }}>4K HD</div>
+                                           </div>
+                                           <div style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6 }}>
+                                              {log.images.slice(0, 5).map((_, i) => (
+                                                <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? 'white' : 'rgba(255,255,255,0.3)' }} />
+                                              ))}
+                                           </div>
+                                        </div>
+                                      )}
+                                     
+                                     <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                         <div style={{ color: 'var(--accent-primary)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Premium Bridge Result</div>
+                                         <div style={{ fontSize: 20, fontWeight: 700 }}>{log.data.address}</div>
+                                         <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
+                                            <span style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>${log.data.price?.toLocaleString()}</span>
+                                            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{log.data.square_footage || 0} SQM</span>
+                                         </div>
+                                       </div>
+
+                                       <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{log.data.description}</div>
+
+                                       <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                                         <button 
+                                           className="btn btn-primary" 
+                                           style={{ flex: 1, fontSize: 13, height: 44, borderRadius: 12 }}
+                                           onClick={() => { loadData(); alert('Saved to Drafts') }}
+                                         >
+                                           <HiOutlineClipboardCheck /> Save Draft
+                                         </button>
+                                         
+                                         <div style={{ position: 'relative', flex: 1 }}>
+                                           <button 
+                                             className="btn btn-secondary" 
+                                             style={{ width: '100%', fontSize: 13, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: 'none' }}
+                                             onClick={(e) => {
+                                               const menu = e.currentTarget.nextElementSibling
+                                               menu.style.display = menu.style.display === 'none' ? 'block' : 'none'
+                                             }}
+                                           >
+                                             <HiOutlineExternalLink /> Push live
+                                           </button>
+                                           <div className="glass-strong" style={{ display: 'none', position: 'absolute', bottom: 'calc(100% + 12px)', right: 0, width: 220, zIndex: 10, padding: 8, boxShadow: '0 20px 40px rgba(0,0,0,0.6)', borderRadius: 12 }}>
+                                             {['Facebook Real Estate', 'Instagram Stories', 'Bribox Prime', 'Dot Property'].map(p => (
+                                               <div key={p} className="hover:bg-white/5 p-3 rounded-lg cursor-pointer text-sm transition-colors" onClick={() => handlePush(log.data.id, p)}>{p}</div>
+                                             ))}
+                                           </div>
+                                         </div>
+                                       </div>
+                                     </div>
+                                   </motion.div>
+                                 )}
+
+                                 <div dangerouslySetInnerHTML={{ __html: log.content?.replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--accent-primary)">$1</strong>') || '' }} />
+
+                               </div>
+                             </div>
+                          )}
+                          {log.role === 'user' && log.content}
+                        </div>
+                      </motion.div>
+                    ))}
+                    {scrapeLoading && (
+                      <div style={{ display: 'flex', gap: 16 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-primary)', opacity: 0.5, animation: 'pulse 2s infinite' }} />
+                        <div style={{ color: 'var(--text-muted)', fontSize: 14, fontStyle: 'italic' }}>Analyzing listing URL...</div>
+                      </div>
+                    )}
+                    <div ref={scraperEndRef} />
+                  </div>
+                </div>
+
+                {/* Scrape Input (Pill Style - Refined) */}
+                <div style={{ padding: '0 0 32px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+                  {/* Image Previews Pop-in */}
+                  <AnimatePresence>
+                    {filePreviews.length > 0 && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.9 }} 
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        style={{ display: 'flex', gap: 12, marginBottom: 8, maxWidth: 800, width: '100%', overflowX: 'auto', padding: '8px 4px' }}
+                      >
+                        {filePreviews.map((p, i) => (
+                          <div key={i} style={{ position: 'relative', flexShrink: 0 }}>
+                            <img src={p} style={{ width: 60, height: 60, borderRadius: 12, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }} />
+                            <button 
+                              onClick={() => handleRemoveFile(i)}
+                              style={{ position: 'absolute', top: -10, right: -10, background: '#ff4d4d', color: 'white', border: 'none', borderRadius: '50%', width: 22, height: 22, fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 5, boxShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
+                            >
+                              <HiOutlineX />
+                            </button>
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div style={{ maxWidth: 850, margin: '0 auto', width: '100%', position: 'relative' }}>
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        if (!scrapeUrl.startsWith('http') && scrapeUrl) {
+                          const lastAiLog = [...scraperLog].reverse().find(l => l.role === 'ai' && l.data)
+                          if (lastAiLog) {
+                            handleUpdateListing(scrapeUrl, lastAiLog.data)
+                            setScrapeUrl('')
+                            return
+                          }
+                        }
+                        handleScrape(e)
+                      }}
+                      className="glass-strong"
+                      style={{ 
+                        borderRadius: 24, 
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        padding: '16px 20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        minHeight: 120,
+                        position: 'relative',
+                        background: 'rgba(255,255,255,0.03)'
+                      }}
+                    >
+                      {/* Top Right Indicator Dot */}
+                      <div style={{ position: 'absolute', top: 16, right: 20, width: 8, height: 8, borderRadius: '50%', background: '#7c4dff', boxShadow: '0 0 10px #7c4dff' }} />
+
+                      <textarea 
+                        placeholder="Bridge a listing URL, or ask to refine the details..."
+                        value={scrapeUrl}
+                        onChange={(e) => setScrapeUrl(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault()
+                            e.currentTarget.form.requestSubmit()
+                          }
+                        }}
+                        style={{
+                          width: '100%', background: 'transparent', border: 'none',
+                          color: '#e8eaed', fontSize: 16, outline: 'none',
+                          resize: 'none', flex: 1, padding: '4px 0',
+                          lineHeight: 1.5
+                        }}
+                      />
+
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.15)', color: '#9aa0a6', transition: 'all 0.2s' }}>
+                            <HiPlus style={{ fontSize: 18 }} />
+                            <input type="file" multiple hidden onChange={handleFileChange} />
+                          </label>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', color: '#9aa0a6' }}>
+                            <HiOutlineLightningBolt style={{ fontSize: 16 }} />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                          <HiOutlineMicrophone style={{ color: '#9aa0a6', fontSize: 20, cursor: 'pointer' }} />
+                          <button 
+                            type="submit"
+                            disabled={scrapeLoading || (!scrapeUrl && pendingFiles.length === 0)}
+                            style={{ 
+                              background: 'white', color: 'black', border: 'none', borderRadius: '50%',
+                              width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              cursor: 'pointer', opacity: (scrapeLoading || (!scrapeUrl && pendingFiles.length === 0)) ? 0.3 : 1, 
+                              transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                            }}
+                          >
+                            <HiArrowUp style={{ fontSize: 20 }} />
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                  
+
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Edit Modal */}
+          <AnimatePresence>
+            {editProp && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                style={{
+                  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  zIndex: 100, padding: 24
+                }}
+                onClick={() => setEditProp(null)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.95, y: 20 }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  className="glass-strong"
+                  style={{ width: '100%', maxWidth: 640, maxHeight: '85vh', overflow: 'auto', padding: 40 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h3 style={{ fontSize: 22, fontWeight: 700, marginBottom: 24 }}>Edit Property</h3>
+                  <EditForm
+                    property={editProp}
+                    onSave={async (data) => {
+                      await updateProperty(editProp.id, data)
+                      setEditProp(null)
+                      loadData()
+                    }}
+                    onCancel={() => setEditProp(null)}
+                  />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+      </div>
     </div>
+  )
+}
+
+function EditForm({ property, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    address: property.address || '',
+    city: property.city || '',
+    state: property.state || '',
+    zip: property.zip || '',
+    price: property.price || 0,
+    bedrooms: property.bedrooms || 0,
+    bathrooms: property.bathrooms || 0,
+    square_footage: property.square_footage || 0,
+    description: property.description || '',
+  })
+  const [saving, setSaving] = useState(false)
+
+  const handleChange = (field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    await onSave(form)
+    setSaving(false)
+  }
+
+  const fields = [
+    { label: 'Address', field: 'address', type: 'text' },
+    { label: 'City', field: 'city', type: 'text', half: true },
+    { label: 'State', field: 'state', type: 'text', half: true },
+    { label: 'Zip', field: 'zip', type: 'text', half: true },
+    { label: 'Price ($)', field: 'price', type: 'number', half: true },
+    { label: 'Bedrooms', field: 'bedrooms', type: 'number', half: true },
+    { label: 'Bathrooms', field: 'bathrooms', type: 'number', half: true },
+    { label: 'Sq. Footage', field: 'square_footage', type: 'number' },
+  ]
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        {fields.map(f => (
+          <div key={f.field} style={{ gridColumn: f.half ? 'auto' : '1 / -1' }}>
+            <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+              {f.label}
+            </label>
+            <motion.input
+              type={f.type}
+              className="input"
+              value={form[f.field]}
+              onChange={(e) => handleChange(f.field, f.type === 'number' ? Number(e.target.value) : e.target.value)}
+              whileFocus={{ borderColor: 'var(--accent-primary)' }}
+              transition={{ duration: 0.4 }}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+          Description
+        </label>
+        <motion.textarea
+          className="input"
+          rows={5}
+          value={form.description}
+          onChange={(e) => handleChange('description', e.target.value)}
+          style={{ resize: 'vertical' }}
+          whileFocus={{ borderColor: 'var(--accent-primary)' }}
+          transition={{ duration: 0.4 }}
+        />
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, marginTop: 32, justifyContent: 'flex-end' }}>
+        <button type="button" onClick={onCancel} className="btn btn-secondary">Cancel</button>
+        <motion.button 
+          type="submit" 
+          className="btn btn-primary" 
+          disabled={saving}
+          whileHover={{ scale: 1.02, y: -2 }}
+          transition={{ duration: 0.4 }}
+        >
+          {saving ? 'Saving...' : 'Save Changes'}
+        </motion.button>
+      </div>
+    </form>
   )
 }

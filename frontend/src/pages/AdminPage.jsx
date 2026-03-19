@@ -554,18 +554,26 @@ export default function AdminPage() {
                     <HiOutlineRefresh className={loading ? 'animate-spin' : ''} style={{ fontSize: 16 }} /> Refresh
                   </button>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
-                  <div className="metric-card" style={{ padding: 32, border: 'none', boxShadow: 'none' }}>
-                    <div className="metric-value" style={{ fontSize: 40, color: 'var(--text-primary)' }}>{stats.draft_listings}</div>
-                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 11, color: 'var(--text-muted)' }}>Draft Listings</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
+                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(255,255,255,0.03)' }}>
+                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--text-primary)' }}>{stats.draft_listings}</div>
+                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Draft Listings</div>
                   </div>
-                  <div className="metric-card" style={{ padding: 32, border: 'none', boxShadow: 'none' }}>
-                    <div className="metric-value" style={{ fontSize: 40, color: 'var(--accent-primary)' }}>{stats.active_listings}</div>
-                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 11, color: 'var(--text-muted)' }}>Active Listings</div>
+                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(255,255,255,0.03)' }}>
+                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--accent-primary)' }}>{stats.active_listings}</div>
+                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Active Listings</div>
                   </div>
-                  <div className="metric-card" style={{ padding: 32, border: 'none', boxShadow: 'none' }}>
-                    <div className="metric-value" style={{ fontSize: 40, color: 'var(--text-primary)' }}>{stats.pending_permissions}</div>
-                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 11, color: 'var(--text-muted)' }}>Pending Permissions</div>
+                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(255,255,255,0.03)' }}>
+                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--text-primary)' }}>{stats.pending_permissions}</div>
+                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Pending Permissions</div>
+                  </div>
+                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(255,255,255,0.03)' }}>
+                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--text-muted)', opacity: 0.5 }}>0</div>
+                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Active Sessions</div>
+                  </div>
+                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(255,255,255,0.03)' }}>
+                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--text-muted)', opacity: 0.5 }}>0</div>
+                    <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Total Views</div>
                   </div>
                 </div>
               </motion.div>

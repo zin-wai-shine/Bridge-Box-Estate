@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import briboxLogo from '../assets/logo/bribox.svg'
+import SearchModal from './SearchModal'
 import { 
   HiPlus,
   HiMagnifyingGlass,
@@ -16,7 +18,9 @@ import {
   HiCube,
   HiBolt,
   HiBookOpen,
-  HiBars3BottomLeft
+  HiBars3BottomLeft,
+  HiCog8Tooth,
+  HiArrowRightOnRectangle
 } from 'react-icons/hi2'
 
 export default function ChatSidebar({ 
@@ -27,6 +31,8 @@ export default function ChatSidebar({
   onUpdateSession, 
   onDeleteSession,
   onToggleSidebar,
+  onLogout,
+  isAdmin,
   isOpen 
 }) {
   const [searchQuery, setSearchQuery] = useState('')
@@ -35,7 +41,18 @@ export default function ChatSidebar({
   const [editTitle, setEditTitle] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
   const [isHeaderHovered, setIsHeaderHovered] = useState(false)
-  const [isToggleHovered, setIsToggleHovered] = useState(false)
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'f')) {
+        e.preventDefault()
+        setIsSearchModalOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   const filteredSessions = sessions.filter(s => 
     s.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -86,7 +103,7 @@ export default function ChatSidebar({
       >
         {isOpen ? (
           <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <div style={{
                 width: '45px',
                 height: '45px',
@@ -125,16 +142,16 @@ export default function ChatSidebar({
             </div>
           </div>
         ) : (
-          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <div style={{ position: 'relative', width: '40px', height: '40px' }}>
             <div style={{
               width: '40px',
               height: '40px',
               backgroundImage: `url(${briboxLogo})`,
-            backgroundSize: 'contain',
-            filter: 'brightness(0.85)',
+              backgroundSize: 'contain',
+              filter: 'brightness(0.85)',
               backgroundRepeat: 'no-repeat',
               backgroundPosition: 'center',
-              opacity: isHeaderHovered ? 0.3 : 1,
+              opacity: isHeaderHovered ? 0 : 1,
               transition: 'opacity 0.2s'
             }} />
 
@@ -147,14 +164,15 @@ export default function ChatSidebar({
                   onClick={(e) => { e.stopPropagation(); onToggleSidebar() }}
                   style={{
                     position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    background: 'var(--accent-primary)', color: 'white',
-                    border: 'none', borderRadius: 8, padding: 8,
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    background: '#1a1a1a', color: 'var(--text-secondary)',
+                    border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer', zIndex: 40,
-                    boxShadow: '0 0 15px var(--accent-glow)'
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
                   }}
                   title="Open sidebar"
                 >
@@ -180,29 +198,18 @@ export default function ChatSidebar({
         <NavButton 
           icon={HiMagnifyingGlass} 
           label="Search chats" 
-          onClick={() => isOpen && setShowSearchInput(!showSearchInput)} 
+          onClick={() => setIsSearchModalOpen(true)} 
           collapsed={!isOpen}
         />
         
-        {isOpen && showSearchInput && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            style={{ padding: '4px 8px 8px' }}
-          >
-            <input
-              type="text"
-              placeholder="Search..."
-              autoFocus
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%', padding: '6px 10px', background: '#171717', border: '1px solid #333',
-                borderRadius: 8, color: 'white', fontSize: 13, outline: 'none'
-              }}
-            />
-          </motion.div>
-        )}
+        {/* Search Modal */}
+        <SearchModal 
+          isOpen={isSearchModalOpen}
+          onClose={() => setIsSearchModalOpen(false)}
+          sessions={sessions}
+          onSelectSession={onSelectSession}
+          onNewChat={onNewChat}
+        />
       </div>
 
       {/* Session List */}
@@ -366,6 +373,56 @@ export default function ChatSidebar({
         ) : null}
       </div>
 
+      {/* Sidebar Footer */}
+      <div style={{ padding: '8px', borderTop: '1px solid rgba(255,255,255,0.03)', background: 'rgba(0,0,0,0.2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: isOpen ? 'flex-start' : 'center', gap: 4 }}>
+          {isAdmin && (
+            <Link to="/admin" title="Admin Settings" style={{ textDecoration: 'none' }}>
+              <div 
+                style={{
+                  width: isOpen ? 'auto' : 44,
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <HiCog8Tooth style={{ fontSize: 20 }} />
+                {isOpen && <span style={{ fontSize: 13, fontWeight: 500 }}>Settings</span>}
+              </div>
+            </Link>
+          )}
+          
+          <div 
+            onClick={onLogout}
+            title="Logout"
+            style={{
+              flex: isOpen ? 1 : 'none',
+              width: isOpen ? 'auto' : 44,
+              padding: '10px 12px',
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+              justifyContent: isOpen ? 'flex-start' : 'center'
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+            onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            <HiArrowRightOnRectangle style={{ fontSize: 20 }} />
+            {isOpen && <span style={{ fontSize: 13, fontWeight: 500 }}>Logout</span>}
+          </div>
+        </div>
+      </div>
     </motion.div>
   )
 }

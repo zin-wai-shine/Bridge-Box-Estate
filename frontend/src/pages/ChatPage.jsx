@@ -13,16 +13,18 @@ import {
   HiMicrophone,
   HiArrowUp,
   HiPlus,
-  HiBolt
+  HiBolt,
+  HiMagnifyingGlass,
+  HiCube
 } from 'react-icons/hi2'
 import briboxLogo from '../assets/logo/bribox.svg'
 import { sendMessage, getSessions, createSession, updateSession, deleteSession, getSessionHistory } from '../services/api'
 import ChatSidebar from '../components/ChatSidebar'
 
 const quickActions = [
-  { label: 'Find a Home', icon: HiSparkles, message: 'Find me available properties' },
-  { label: 'Bridge a Listing', icon: HiSparkles, message: 'How do I bridge a listing?' },
-  { label: 'Market Insights', icon: HiSparkles, message: 'What are the current market trends?' },
+  { label: 'Find a Home', icon: HiMagnifyingGlass, message: 'Find me available properties' },
+  { label: 'Bridge a Listing', icon: HiCube, message: 'How do I bridge a listing?' },
+  { label: 'Market Insights', icon: HiBolt, message: 'What are the current market trends?' },
 ]
 
 // PropertyCard component for rendering structured property data
@@ -39,8 +41,8 @@ function PropertyCard({ property }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
+        background: 'transparent',
+        border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: 12,
         padding: 16,
         marginTop: 8,
@@ -378,59 +380,17 @@ export default function ChatPage() {
         onUpdateSession={handleUpdateSession}
         onDeleteSession={handleDeleteSession}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        onLogout={handleLogout}
+        isAdmin={isAgent}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
-        {/* Header */}
-        <header style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '8px 16px',
-          background: 'transparent',
-          position: 'relative', zIndex: 10,
-          minHeight: 88
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div 
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}
-              onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-              onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-            >
-              <img src={briboxLogo} alt="BriBox" style={{ height: 37, width: 'auto', filter: 'brightness(0.8549)' }} />
-              <span style={{ 
-                fontSize: '16px', 
-                fontWeight: '800', 
-                color: '#dadada', 
-                letterSpacing: '1px'
-              }}>bribox</span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {isAgent && (
-              <Link to="/admin"
-                style={{ textDecoration: 'none', background: 'transparent', border: 'none', color: 'var(--text-secondary)', display: 'flex', padding: 8, borderRadius: 8 }}
-                onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-                onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-              >
-                <HiCog8Tooth style={{ fontSize: 20 }} />
-              </Link>
-            )}
-            <button 
-              onClick={handleLogout} 
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 8, borderRadius: 8 }}
-              onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-              onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-            >
-              <HiArrowRightOnRectangle style={{ fontSize: 20 }} />
-            </button>
-          </div>
-        </header>
 
         {/* Messages Area */}
         <div style={{
-          flex: 1, overflowY: 'auto', padding: '24px 24px',
+          flex: 1, overflowY: 'auto', padding: '24px 24px 40px',
           display: 'flex', flexDirection: 'column',
-          background: 'var(--bg-secondary)'
+          background: 'transparent'
         }}>
           <div style={{ maxWidth: 720, width: '100%', margin: '0 auto', flex: 1 }}>
             {/* Welcome state */}
@@ -444,10 +404,13 @@ export default function ChatPage() {
                 <motion.div
                   animate={{ rotate: [0, 5, -5, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                  style={{ fontSize: 48, marginBottom: 16 }}
-                >
-                  <HiSparkles style={{ color: 'var(--accent-primary)' }} />
-                </motion.div>
+                  style={{ 
+                    width: 48, height: 48, margin: '0 auto 16px',
+                    backgroundImage: `url(${briboxLogo})`,
+                    backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                    filter: 'brightness(0.9)'
+                  }}
+                />
                 <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>
                   What are you looking for?
                 </h2>
@@ -475,16 +438,34 @@ export default function ChatPage() {
                   <div style={{
                     maxWidth: msg.role === 'user' ? '80%' : '100%',
                     padding: msg.role === 'user' ? '12px 18px' : '8px 0',
-                    background: msg.role === 'user' ? 'var(--bg-card)' : 'transparent',
+                    background: msg.role === 'user' ? 'transparent' : 'transparent',
                     borderRadius: msg.role === 'user' ? 20 : 0,
                     color: msg.error ? 'var(--danger)' : 'var(--text-primary)',
                     fontSize: 15,
                     lineHeight: 1.6,
-                    boxShadow: msg.role === 'user' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
+                    boxShadow: 'none',
+                    border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.1)' : 'none'
                   }}>
                     {msg.role === 'ai' && (
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <HiSparkles /> BriBox AI
+                      <div style={{ color: '#dadada', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 2, transform: 'translateX(-4px)' }}>
+                        <div style={{
+                          width: '45px',
+                          height: '45px',
+                          backgroundImage: `url(${briboxLogo})`,
+                          backgroundSize: 'contain',
+                          backgroundRepeat: 'no-repeat',
+                          backgroundPosition: 'left center',
+                          filter: 'brightness(0.9)',
+                          position: 'relative',
+                          top: '1px'
+                        }} />
+                        <span style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '800', 
+                          letterSpacing: '0.5px',
+                          position: 'relative',
+                          top: '-1px'
+                        }}>bribox</span>
                       </div>
                     )}
                     {msg.role === 'ai' ? (
@@ -525,10 +506,10 @@ export default function ChatPage() {
         {/* Bottom Input Area */}
         <div style={{
           borderTop: 'none',
-          background: '#121212',
-          padding: '0 24px 24px',
+          background: 'transparent',
+          padding: '0 24px 16px',
         }}>
-          <div style={{ maxWidth: 740, margin: '0 auto' }}>
+          <div style={{ maxWidth: 740, margin: '0 auto', background: 'transparent' }}>
             {/* Quick Actions */}
             {messages.length === 0 && (
               <motion.div
@@ -545,8 +526,8 @@ export default function ChatPage() {
                     style={{ 
                       fontSize: 12, 
                       borderRadius: 10,
-                      background: 'var(--bg-card)',
-                      border: 'none',
+                      background: 'transparent',
+                      border: '1px solid rgba(255,255,255,0.1)',
                       color: 'var(--text-secondary)'
                     }}
                   >
@@ -558,7 +539,6 @@ export default function ChatPage() {
 
             {/* Tactical Input Bar */}
             <div 
-              className="glass-strong"
               style={{ 
                 borderRadius: 24, 
                 border: '1px solid rgba(255,255,255,0.08)',
@@ -567,7 +547,7 @@ export default function ChatPage() {
                 flexDirection: 'column',
                 minHeight: 120,
                 position: 'relative',
-                background: 'rgba(255,255,255,0.03)'
+                background: 'transparent'
               }}
             >
               {/* Top Right Indicator Dot */}

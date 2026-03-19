@@ -421,7 +421,7 @@ export default function AdminPage() {
           >
             {sidebarOpen ? (
               <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <div style={{
                     width: '45px',
                     height: '45px',
@@ -459,7 +459,7 @@ export default function AdminPage() {
                 </div>
               </div>
             ) : (
-              <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <div style={{ position: 'relative', width: '60px', height: '60px', cursor: 'pointer' }} onClick={() => setSidebarOpen(true)}>
                 <div style={{
                   width: '60px',
                   height: '60px',
@@ -468,7 +468,7 @@ export default function AdminPage() {
                   filter: 'brightness(0.85)',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center',
-                  opacity: isHeaderHovered ? 0.3 : 1,
+                  opacity: isHeaderHovered ? 0 : 1,
                   transition: 'opacity 0.2s'
                 }} />
 
@@ -481,14 +481,15 @@ export default function AdminPage() {
                       onClick={(e) => { e.stopPropagation(); setSidebarOpen(true) }}
                       style={{
                         position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        background: 'var(--accent-primary)', color: 'white',
-                        border: 'none', borderRadius: 8, padding: 8,
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: '#1a1a1a', color: 'var(--text-secondary)',
+                        border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         cursor: 'pointer', zIndex: 40,
-                        boxShadow: '0 0 15px var(--accent-glow)'
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
                       }}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -531,34 +532,53 @@ export default function AdminPage() {
           </div>
 
           {/* User Info & Header Actions (Moved to sidebar bottom if desired, but I'll skip for now to keep it clean) */}
-          <div style={{ marginTop: 'auto', padding: '16px' }}>
-             {sidebarOpen && (
-               <div style={{ padding: '8px 4px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{user.email.split('@')[0]}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{user.role}</div>
-                  
-                  <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                    <Link to="/chat" 
-                      style={{ 
-                        textDecoration: 'none', color: 'var(--text-secondary)', flex: 1,
-                        fontSize: 12, fontWeight: 500, padding: '8px', borderRadius: 8,
-                        background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
-                      }}
-                    >
-                      <HiOutlineChat /> Chat
-                    </Link>
-                    <button onClick={handleLogout} 
-                      style={{ 
-                        background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-secondary)', flex: 1,
-                        fontSize: 12, fontWeight: 500, padding: '8px', borderRadius: 8,
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
-                      }}
-                    >
-                      <HiOutlineLogout /> Exit
-                    </button>
-                  </div>
-               </div>
-             )}
+          {/* Sidebar Footer */}
+          <div style={{ padding: '8px', borderTop: '1px solid rgba(255,255,255,0.03)', background: 'rgba(0,0,0,0.2)', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: sidebarOpen ? 'flex-start' : 'center', gap: 4 }}>
+              <Link to="/chat" title="Go to Chat" style={{ textDecoration: 'none' }}>
+                <div 
+                  style={{
+                    width: sidebarOpen ? 'auto' : 44,
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    color: 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                  onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <HiOutlineChat style={{ fontSize: 20 }} />
+                  {sidebarOpen && <span style={{ fontSize: 13, fontWeight: 500 }}>Chat</span>}
+                </div>
+              </Link>
+              
+              <div 
+                onClick={handleLogout}
+                title="Logout"
+                style={{
+                  flex: sidebarOpen ? 1 : 'none',
+                  width: sidebarOpen ? 'auto' : 44,
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s',
+                  justifyContent: sidebarOpen ? 'flex-start' : 'center'
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <HiOutlineLogout style={{ fontSize: 20 }} />
+                {sidebarOpen && <span style={{ fontSize: 13, fontWeight: 500 }}>Logout</span>}
+              </div>
+            </div>
           </div>
         </motion.nav>
 
@@ -638,7 +658,7 @@ export default function AdminPage() {
             {tab === 'scrape' && (
               <motion.div key="scrape" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
                 {/* Chat Header */}
-                <div style={{ padding: '0 0 24px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ padding: '0 0 24px 0' }}>
                   <h2 style={{ fontSize: 24, fontWeight: 700 }}>Bridge Scraper</h2>
                   <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>AI-powered property extraction and multi-platform publishing.</p>
                 </div>
@@ -665,10 +685,11 @@ export default function AdminPage() {
                           {log.role === 'ai' && (
                              <div style={{ display: 'flex', gap: 16 }}>
                                <div style={{ 
-                                 width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-primary)', 
-                                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4
+                                 width: 28, height: 28, borderRadius: '50%', background: '#1c1c1c', 
+                                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4,
+                                 border: '1px solid rgba(255,255,255,0.05)'
                                }}>
-                                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'white' }} />
+                                 <img src={briboxLogo} style={{ width: 14, height: 'auto', filter: 'brightness(0.9)' }} alt="" />
                                </div>
                                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                  {/* 1. PROGRESS CARD TYPE */}

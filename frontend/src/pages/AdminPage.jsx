@@ -416,8 +416,8 @@ export default function AdminPage() {
           }}>
             {sidebarOpen ? (
               <div style={{
-                width: '160px',
-                height: '48px',
+                width: '180px',
+                height: '60px',
                 backgroundImage: `url(${whiteLogo})`,
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
@@ -426,8 +426,8 @@ export default function AdminPage() {
               }} />
             ) : (
               <div style={{
-                width: '32px',
-                height: '32px',
+                width: '40px',
+                height: '40px',
                 backgroundImage: `url(${whiteIcon})`,
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',

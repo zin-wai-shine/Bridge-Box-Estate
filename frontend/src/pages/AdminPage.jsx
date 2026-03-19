@@ -417,7 +417,7 @@ export default function AdminPage() {
           }}>
             {sidebarOpen ? (
               <>
-                <img src={whiteLogo} alt="BriBox" style={{ height: 24, width: 'auto', marginLeft: 4 }} />
+                <img src={whiteLogo} alt="BriBox" style={{ height: 40, width: 'auto', marginLeft: 0 }} />
                 <button 
                   onClick={() => setSidebarOpen(false)}
                   style={{
@@ -455,7 +455,7 @@ export default function AdminPage() {
                     <line x1="9" y1="3" x2="9" y2="21"/>
                   </svg>
                 ) : (
-                  <img src={whiteIcon} alt="B" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+                  <img src={whiteIcon} alt="B" style={{ width: 40, height: 40, objectFit: 'contain' }} />
                 )}
               </button>
             )}

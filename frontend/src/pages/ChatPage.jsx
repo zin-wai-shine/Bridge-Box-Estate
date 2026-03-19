@@ -398,7 +398,7 @@ export default function ChatPage() {
               onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
               onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <img src={whiteLogo} alt="BriBox" style={{ height: 18, width: 'auto' }} />
+              <img src={whiteLogo} alt="BriBox" style={{ height: 36, width: 'auto' }} />
               <HiChevronDown style={{ fontSize: 16, color: 'var(--text-secondary)', marginTop: 2 }} />
             </div>
           </div>

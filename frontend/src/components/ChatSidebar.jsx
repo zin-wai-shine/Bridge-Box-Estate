@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import whiteIcon from '../assets/logo/white_icon.png'
+import whiteLogo from '../assets/logo/white_logo.png'
 import { 
   HiPlus,
   HiMagnifyingGlass,
@@ -81,13 +83,7 @@ export default function ChatSidebar({
       }}>
         {isOpen ? (
           <>
-            <div style={{
-              width: 24, height: 24, borderRadius: '6px',
-              background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 14, fontWeight: 900, color: 'black'
-            }}>
-              B
-            </div>
+            <img src={whiteLogo} alt="BriBox" style={{ height: 24, width: 'auto', marginLeft: 4 }} />
             
             <button 
               onClick={onToggleSidebar}
@@ -144,13 +140,7 @@ export default function ChatSidebar({
                 <line x1="9" y1="3" x2="9" y2="21"/>
               </svg>
             ) : (
-              <div style={{
-                width: 24, height: 24, borderRadius: '6px',
-                background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14, fontWeight: 900, color: 'black'
-              }}>
-                B
-              </div>
+              <img src={whiteIcon} alt="B" style={{ width: 24, height: 24, objectFit: 'contain' }} />
             )}
           </button>
         )}

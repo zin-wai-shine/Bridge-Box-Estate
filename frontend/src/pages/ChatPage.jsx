@@ -15,6 +15,7 @@ import {
   HiPlus,
   HiBolt
 } from 'react-icons/hi2'
+import whiteLogo from '../assets/logo/white_logo.png'
 import { sendMessage, getSessions, createSession, updateSession, deleteSession, getSessionHistory } from '../services/api'
 import ChatSidebar from '../components/ChatSidebar'
 
@@ -397,7 +398,7 @@ export default function ChatPage() {
               onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
               onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>BriBox</h1>
+              <img src={whiteLogo} alt="BriBox" style={{ height: 18, width: 'auto' }} />
               <HiChevronDown style={{ fontSize: 16, color: 'var(--text-secondary)', marginTop: 2 }} />
             </div>
           </div>

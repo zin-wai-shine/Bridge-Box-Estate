@@ -396,6 +396,12 @@ export default function ChatPage() {
               onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               <img src={briboxLogo} alt="BriBox" style={{ height: 40, width: 'auto', filter: 'brightness(0.85)' }} />
+              <span style={{ 
+                fontSize: '20px', 
+                fontWeight: '800', 
+                color: '#dadada', 
+                letterSpacing: '1px'
+              }}>BRIBOX</span>
             </div>
           </div>
 

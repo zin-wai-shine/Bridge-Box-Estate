@@ -96,6 +96,13 @@ export default function ChatSidebar({
               marginLeft: 4,
               filter: 'brightness(0.85)'
             }} />
+            <span style={{ 
+              fontSize: '22px', 
+              fontWeight: '800', 
+              color: '#dadada', 
+              letterSpacing: '1px',
+              marginLeft: '8px'
+            }}>BRIBOX</span>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button 

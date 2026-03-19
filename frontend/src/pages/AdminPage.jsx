@@ -20,6 +20,8 @@ import {
   HiOutlineLightningBolt
 } from 'react-icons/hi'
 import DataTable from '../components/DataTable'
+import whiteIcon from '../assets/logo/white_icon.png'
+import whiteLogo from '../assets/logo/white_logo.png'
 
 export default function AdminPage() {
   const navigate = useNavigate()
@@ -415,13 +417,7 @@ export default function AdminPage() {
           }}>
             {sidebarOpen ? (
               <>
-                <div style={{
-                  width: 24, height: 24, borderRadius: '6px',
-                  background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, fontWeight: 900, color: 'black'
-                }}>
-                  B
-                </div>
+                <img src={whiteLogo} alt="BriBox" style={{ height: 24, width: 'auto', marginLeft: 4 }} />
                 <button 
                   onClick={() => setSidebarOpen(false)}
                   style={{
@@ -459,13 +455,7 @@ export default function AdminPage() {
                     <line x1="9" y1="3" x2="9" y2="21"/>
                   </svg>
                 ) : (
-                  <div style={{
-                    width: 24, height: 24, borderRadius: '6px',
-                    background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 14, fontWeight: 900, color: 'black'
-                  }}>
-                    B
-                  </div>
+                  <img src={whiteIcon} alt="B" style={{ width: 24, height: 24, objectFit: 'contain' }} />
                 )}
               </button>
             )}

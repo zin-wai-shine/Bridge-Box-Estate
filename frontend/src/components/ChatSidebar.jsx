@@ -73,77 +73,62 @@ export default function ChatSidebar({
     >
       {/* Sidebar Header */}
       <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: isOpen ? 'space-between' : 'center', 
-        padding: '12px 0',
-        margin: '0 16px',
-        marginBottom: 8,
-        minHeight: 88
+        padding: isOpen ? '24px 20px 12px' : '24px 0 12px',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: isOpen ? 'flex-start' : 'center',
+        minHeight: 100
       }}>
         {isOpen ? (
-          <>
-            <img src={whiteLogo} alt="BriBox" style={{ height: 64, width: 'auto', marginLeft: 0 }} />
-            
-            <button 
-              onClick={onToggleSidebar}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-secondary)',
-                fontSize: 20,
-                cursor: 'pointer',
-                padding: 8,
-                borderRadius: 8,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'background 0.2s'
-              }}
-              onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-              onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-              title="Close sidebar"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <line x1="9" y1="3" x2="9" y2="21"/>
-              </svg>
-            </button>
-          </>
+          <div style={{
+            width: '160px',
+            height: '48px',
+            backgroundImage: `url(${whiteLogo})`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'left center',
+            marginLeft: 4
+          }} />
         ) : (
-          <button 
-            onClick={onToggleSidebar}
-            onMouseEnter={() => setIsToggleHovered(true)}
-            onMouseLeave={() => setIsToggleHovered(false)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-secondary)',
-              fontSize: 20,
-              cursor: 'pointer',
-              padding: 8,
-              borderRadius: 8,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'background 0.2s',
-              width: 40,
-              height: 40
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-            onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-            title="Open sidebar"
-          >
-            {isToggleHovered ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <line x1="9" y1="3" x2="9" y2="21"/>
-              </svg>
-            ) : (
-              <img src={whiteIcon} alt="B" style={{ width: 64, height: 64, objectFit: 'contain' }} />
-            )}
-          </button>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            backgroundImage: `url(${whiteIcon})`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center'
+          }} />
         )}
+
+        <button 
+          onClick={onToggleSidebar}
+          style={{
+            position: 'absolute',
+            top: isOpen ? 28 : 70, // Adjust position when collapsed
+            right: isOpen ? 16 : 'auto',
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--text-secondary)',
+            fontSize: 20,
+            cursor: 'pointer',
+            padding: 6,
+            borderRadius: 8,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s',
+            zIndex: 30
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+          title={isOpen ? "Close sidebar" : "Open sidebar"}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1={isOpen ? "9" : "15"} y1="3" x2={isOpen ? "9" : "15"} y2="21"/>
+          </svg>
+        </button>
       </div>
 
       {/* Main Navigation */}

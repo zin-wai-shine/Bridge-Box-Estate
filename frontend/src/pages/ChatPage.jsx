@@ -9,13 +9,18 @@ import {
   HiMapPin, 
   HiBars3BottomLeft,
   HiChevronDown,
+  HiArrowsPointingOut,
   HiBars3,
   HiMicrophone,
   HiArrowUp,
   HiPlus,
   HiBolt,
   HiMagnifyingGlass,
-  HiCube
+  HiCube,
+  HiHeart,
+  HiOutlineHeart,
+  HiXMark,
+  HiOutlineBanknotes
 } from 'react-icons/hi2'
 import briboxLogo from '../assets/logo/bribox.svg'
 import { sendMessage, getSessions, createSession, updateSession, deleteSession, getSessionHistory } from '../services/api'
@@ -27,84 +32,305 @@ const quickActions = [
   { label: 'Market Insights', icon: HiBolt, message: 'What are the current market trends?' },
 ]
 
-// PropertyCard component for rendering structured property data
-function PropertyCard({ property }) {
-  const formatPrice = (price) => {
-    if (price >= 1000000) return `$${(price / 1000000).toFixed(1)}M`
-    if (price >= 1000) return `$${(price / 1000).toFixed(0)}K`
-    return `$${price.toLocaleString()}`
+// Stacked thumbnail for multiple properties
+function PropertyStack({ properties, onClick }) {
+  const count = properties.length
+  const firstProp = properties[0]
+  
+  const containerVariants = {
+    initial: { background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.08)' },
+    hover: { background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.12)' }
   }
+
+  const iconVariants = {
+    initial: { scale: 1, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)' },
+    hover: { scale: 1.15, color: 'var(--accent-primary)', background: 'rgba(255,255,255,0.08)' }
+  }
+  
+  return (
+    <motion.div
+      initial="initial"
+      whileHover="hover"
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      variants={containerVariants}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 16,
+        padding: '8px',
+        borderRadius: 12,
+        border: '0.5px solid',
+        cursor: 'pointer',
+        marginTop: 8,
+        marginBottom: 8,
+        maxWidth: 320,
+        overflow: 'hidden',
+        position: 'relative'
+      }}
+    >
+      {/* Rotating Border Light (Border Beam) */}
+      <motion.div 
+        variants={{
+          initial: { opacity: 0 },
+          hover: { opacity: 1 }
+        }}
+        style={{
+          position: 'absolute', inset: -1, zIndex: 0,
+          background: 'conic-gradient(from var(--border-angle), transparent, rgba(255,255,255,0.15), transparent 30%)',
+          borderRadius: 12,
+          maskImage: 'linear-gradient(black, black), linear-gradient(black, black)',
+          maskClip: 'content-box, border-box',
+          maskComposite: 'exclude',
+          WebkitMaskComposite: 'destination-out',
+          padding: '0.5px',
+          pointerEvents: 'none'
+        }}
+        animate={{ '--border-angle': ['0deg', '360deg'] }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+      />
+
+      {/* Static Border (Always visible but soft) */}
+      <div style={{
+          position: 'absolute', inset: 0, borderRadius: 12,
+          border: '0.5px solid rgba(255,255,255,0.08)',
+          pointerEvents: 'none', zIndex: 1
+      }} />
+
+      <div 
+        style={{
+          display: 'flex', alignItems: 'center', gap: 16, width: '100%', position: 'relative', zIndex: 2
+        }}
+      >
+        {/* Layered Image Stack */}
+        <div style={{ position: 'relative', width: 44, height: 44, flexShrink: 0 }}>
+          {/* Background Layers */}
+          {count > 1 && (
+            <div style={{ 
+              position: 'absolute', top: -3, left: 3, width: '100%', height: '100%', 
+              background: 'rgba(255,255,255,0.05)', borderRadius: 9, 
+              zIndex: 1
+            }} />
+          )}
+          
+          {/* Main Image */}
+          <div style={{ 
+            position: 'relative', width: '100%', height: '100%', 
+            borderRadius: 9, overflow: 'hidden', zIndex: 2, background: '#222',
+            border: '0.5px solid rgba(255,255,255,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            {firstProp.image_url ? (
+              <img src={firstProp.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <HiCube style={{ fontSize: 20, opacity: 0.3 }} />
+            )}
+            
+            {count > 1 && (
+              <div style={{
+                position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontSize: 11, fontWeight: 850
+              }}>
+                +{count - 1}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11, color: 'var(--accent-primary)', fontWeight: 600, letterSpacing: 0.2, marginBottom: 1 }}>
+            {count} {count === 1 ? 'property' : 'properties'} found
+          </div>
+          <div style={{ 
+            fontSize: 14, fontWeight: 400, color: 'white',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+          }}>
+            {firstProp.city || firstProp.address} {count > 1 ? '& more' : ''}
+          </div>
+        </div>
+
+        <motion.div 
+          variants={iconVariants}
+          style={{ 
+            width: 28, height: 28, borderRadius: '50%', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            border: '0.5px solid rgba(255,255,255,0.1)'
+          }}
+        >
+          <HiArrowsPointingOut style={{ fontSize: 14 }} />
+        </motion.div>
+      </div>
+    </motion.div>
+  )
+}
+
+function PropertyModal({ properties, onClose }) {
+  const [activeProperty, setActiveProperty] = useState(properties[0])
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       style={{
-        background: 'transparent',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 12,
-        padding: 16,
-        marginTop: 8,
-        marginBottom: 8,
+        position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', padding: 40
       }}
+      onClick={onClose}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', marginBottom: 2 }}>
-            {property.address || 'Property'}
-          </div>
-          {property.city && (
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 3 }}>
-              <HiMapPin style={{ fontSize: 12 }} />
-              {property.city}{property.state ? `, ${property.state}` : ''} {property.zip || ''}
-            </div>
-          )}
-        </div>
-        <div style={{
-          fontWeight: 800, fontSize: 18, color: 'var(--text-primary)',
-          background: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--success)',
-          padding: '4px 12px', borderRadius: 8,
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        style={{
+          width: '100%', height: '100%', overflow: 'hidden',
+          background: '#0a0a0a', border: 'none',
+          borderRadius: 32, padding: 32, position: 'relative',
+          display: 'flex', flexDirection: 'column'
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Modal Header */}
+        <div style={{ 
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+          marginBottom: 24, flexShrink: 0
         }}>
-          {formatPrice(property.price)}
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 750, color: 'white', letterSpacing: -0.5 }}>Property Results</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Showing {properties.length} matching properties</p>
+          </div>
+          <button 
+            onClick={onClose} 
+            style={{ 
+              background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', 
+              width: 44, height: 44, borderRadius: '50%', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+          >
+            <HiXMark style={{ fontSize: 24 }} />
+          </button>
         </div>
-      </div>
 
-      <div style={{ display: 'flex', gap: 16, marginTop: 10 }}>
-        {property.bedrooms > 0 && (
-          <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            <strong>{property.bedrooms}</strong> Beds
-          </div>
-        )}
-        {property.bathrooms > 0 && (
-          <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            <strong>{property.bathrooms}</strong> Baths
-          </div>
-        )}
-        {property.square_footage > 0 && (
-          <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            <strong>{property.square_footage.toLocaleString()}</strong> sqft
-          </div>
-        )}
-        {property.status && (
-          <div style={{
-            fontSize: 11, fontWeight: 600,
-            color: property.status === 'Active' ? 'var(--success)' : 'var(--text-muted)',
-            background: property.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-input)',
-            border: `1px solid ${property.status === 'Active' ? 'var(--success)' : 'var(--border)'}`,
-            padding: '2px 8px', borderRadius: 4,
-            marginLeft: 'auto',
-          }}>
-            {property.status}
-          </div>
-        )}
-      </div>
+        {/* Main Content: Two Columns */}
+        <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 32, flex: 1, overflow: 'hidden' }}>
+          
+          {/* Left Column: Property List */}
+          <div style={{ overflowY: 'auto', paddingRight: 10, display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {properties.map((property, idx) => (
+              <motion.div 
+                key={idx}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                whileHover="hover"
+                onClick={() => setActiveProperty(property)}
+                style={{ 
+                  background: 'transparent', 
+                  borderRadius: 0, cursor: 'pointer', padding: 0,
+                  border: 'none',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <div style={{ position: 'relative', height: 350, borderRadius: 32, overflow: 'hidden', background: '#1a1a1a', marginBottom: 16, border: 'none', outline: 'none' }}>
+                  {property.image_url ? (
+                    <motion.img 
+                      src={property.image_url} 
+                      variants={{ hover: { scale: 1.1 } }}
+                      transition={{ duration: 0.5 }}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none', outline: 'none' }} 
+                    />
+                  ) : (
+                    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <motion.div variants={{ hover: { scale: 1.2 } }}>
+                        <HiCube style={{ fontSize: 40, opacity: 0.1 }} />
+                      </motion.div>
+                    </div>
+                  )}
+                </div>
 
-      {property.description && (
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
-          {property.description.length > 120 ? property.description.slice(0, 120) + '...' : property.description}
+                <div style={{ padding: '0 4px' }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 400, color: 'white', marginBottom: 4 }}>
+                    {property.address}
+                  </h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8 }}>
+                    <HiMapPin style={{ fontSize: 14, color: 'var(--text-muted)' }} />
+                    <span>{property.city}</span>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--accent-primary)' }}>
+                    ฿{property.price?.toLocaleString()}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Right Column: Property Detail View */}
+          <div style={{ overflowY: 'auto', borderRadius: 24, background: 'transparent', padding: 0 }}>
+            {activeProperty && (
+              <div className="animate-fade-in" style={{ paddingBottom: 40 }}>
+                {/* Photo Grid Structure */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 12, height: 450, marginBottom: 32, borderRadius: 24, overflow: 'hidden' }}>
+                  <div style={{ background: '#1a1a1a', position: 'relative', border: 'none', outline: 'none' }}>
+                     <img src={activeProperty.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none', outline: 'none' }} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                       <div style={{ background: '#1a1a1a', border: 'none', outline: 'none' }}><img src={activeProperty.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5, border: 'none', outline: 'none' }} /></div>
+                       <div style={{ background: '#1a1a1a', border: 'none', outline: 'none' }}><img src={activeProperty.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3, border: 'none', outline: 'none' }} /></div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                       <div style={{ background: '#1a1a1a', border: 'none', outline: 'none' }}><img src={activeProperty.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.2, border: 'none', outline: 'none' }} /></div>
+                       <div style={{ background: '#1a1a1a', position: 'relative', border: 'none', outline: 'none' }}>
+                          <img src={activeProperty.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.1, border: 'none', outline: 'none' }} />
+                          <button style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', border: 'none', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                            <HiArrowsPointingOut style={{ fontSize: 18 }} />
+                            Show all photos
+                          </button>
+                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Amenities Row */}
+                <div style={{ 
+                  display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, 
+                  background: 'rgba(255,255,255,0.05)', borderRadius: 20, overflow: 'hidden', 
+                  marginBottom: 32, border: 'none'
+                }}>
+                  {[
+                    { label: 'Bedrooms', value: activeProperty.bedrooms, icon: HiCube },
+                    { label: 'Bathrooms', value: activeProperty.bathrooms, icon: HiSparkles },
+                    { label: 'Area', value: `${activeProperty.square_footage?.toLocaleString()} Sqm`, icon: HiArrowsPointingOut },
+                    { label: '฿/Sqm', value: `฿${Math.round(activeProperty.price / activeProperty.square_footage).toLocaleString()}`, icon: HiOutlineBanknotes },
+                  ].map((item, i) => (
+                    <div key={i} style={{ background: '#0d0d0d', padding: '24px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
+                        <item.icon style={{ fontSize: 20 }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>{item.label}</div>
+                        <div style={{ fontSize: 15, fontWeight: 600, color: 'white' }}>{item.value || '-'}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* About Listing Section */}
+                <div style={{ padding: '0 8px' }}>
+                  <h3 style={{ fontSize: 24, fontWeight: 700, color: 'white', marginBottom: 12 }}>About this listing</h3>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 16, lineHeight: 1.8, maxWidth: '90%' }}>
+                    {activeProperty.description || "Experience refined living in this exceptional property. Featuring modern architectural design, high-end finishes, and thoughtful layouts that maximize space and natural light. Perfect for those seeking both comfort and style."}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </motion.div>
     </motion.div>
   )
 }
@@ -206,15 +432,33 @@ function renderBold(text) {
   })
 }
 
-// MessageContent component that renders text + property cards
-function MessageContent({ content }) {
+// MessageContent component that renders text + property thumbnails
+function MessageContent({ content, onShowProperties }) {
   const parts = parseMessageContent(content)
+  
+  // Group consecutive properties
+  const groupedParts = []
+  let currentGroup = null
+
+  parts.forEach(part => {
+    if (part.type === 'property') {
+      if (!currentGroup) {
+        currentGroup = { type: 'property-stack', properties: [part.content] }
+        groupedParts.push(currentGroup)
+      } else {
+        currentGroup.properties.push(part.content)
+      }
+    } else {
+      currentGroup = null
+      groupedParts.push(part)
+    }
+  })
 
   return (
     <div>
-      {parts.map((part, i) => {
-        if (part.type === 'property') {
-          return <PropertyCard key={i} property={part.content} />
+      {groupedParts.map((part, i) => {
+        if (part.type === 'property-stack') {
+          return <PropertyStack key={i} properties={part.properties} onClick={() => onShowProperties(part.properties)} />
         }
         return <div key={i} style={{ lineHeight: 1.6 }}>{renderMarkdown(part.content)}</div>
       })}
@@ -230,6 +474,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [selectedProperty, setSelectedProperty] = useState(null)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const user = JSON.parse(localStorage.getItem('bribox_user') || '{}')
@@ -438,13 +683,14 @@ export default function ChatPage() {
                   <div style={{
                     maxWidth: msg.role === 'user' ? '80%' : '100%',
                     padding: msg.role === 'user' ? '12px 18px' : '8px 0',
-                    background: msg.role === 'user' ? 'transparent' : 'transparent',
-                    borderRadius: msg.role === 'user' ? 20 : 0,
+                    background: msg.role === 'user' ? 'rgba(255,255,255,0.05)' : 'transparent',
+                    borderRadius: msg.role === 'user' ? 24 : 0,
                     color: msg.error ? 'var(--danger)' : 'var(--text-primary)',
                     fontSize: 15,
                     lineHeight: 1.6,
                     boxShadow: 'none',
-                    border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.1)' : 'none'
+                    border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                    transition: 'all 0.2s ease'
                   }}>
                     {msg.role === 'ai' && (
                       <div style={{ color: '#dadada', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 2, transform: 'translateX(-4px)' }}>
@@ -469,7 +715,7 @@ export default function ChatPage() {
                       </div>
                     )}
                     {msg.role === 'ai' ? (
-                      <MessageContent content={msg.content} />
+                      <MessageContent content={msg.content} onShowProperties={setSelectedProperty} />
                     ) : (
                       <div>{msg.content}</div>
                     )}
@@ -525,10 +771,22 @@ export default function ChatPage() {
                     onClick={() => handleSend(action.message)}
                     style={{ 
                       fontSize: 12, 
-                      borderRadius: 10,
-                      background: 'transparent',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'var(--text-secondary)'
+                      borderRadius: 16,
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      color: 'var(--text-secondary)',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                      e.currentTarget.style.color = 'var(--text-primary)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                      e.currentTarget.style.color = 'var(--text-secondary)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
                     }}
                   >
                     {action.label}
@@ -541,13 +799,14 @@ export default function ChatPage() {
             <div 
               style={{ 
                 borderRadius: 24, 
-                border: '1px solid rgba(255,255,255,0.08)',
-                padding: '16px 20px',
+                border: '1px solid rgba(255,255,255,0.12)',
+                padding: '16px 24px',
                 display: 'flex',
                 flexDirection: 'column',
                 minHeight: 120,
                 position: 'relative',
-                background: 'transparent'
+                background: 'rgba(255,255,255,0.04)',
+                transition: 'all 0.3s ease'
               }}
             >
               {/* Top Right Indicator Dot */}
@@ -608,6 +867,15 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {selectedProperty && (
+          <PropertyModal 
+            properties={selectedProperty} 
+            onClose={() => setSelectedProperty(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -433,7 +433,6 @@ export default function AdminPage() {
                 }} />
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Sidebar</span>
                   <button 
                     onClick={(e) => { e.stopPropagation(); setSidebarOpen(false) }}
                     style={{

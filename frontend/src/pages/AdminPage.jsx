@@ -503,7 +503,7 @@ export default function AdminPage() {
           </div>
 
           {/* Navigation Items */}
-          <div style={{ padding: sidebarOpen ? '0 12px 10px' : '0 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ padding: sidebarOpen ? '0 8px 10px' : '0 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
             {tabs.map(t => (
               <motion.button
                 key={t.id}
@@ -512,7 +512,7 @@ export default function AdminPage() {
                 transition={{ duration: 0.2 }}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: sidebarOpen ? 'flex-start' : 'center',
-                  gap: 12, padding: '10px 16px', minHeight: 44,
+                  gap: 12, padding: '10px 8px', minHeight: 44,
                   borderRadius: 10, border: 'none', cursor: 'pointer',
                   background: tab === t.id ? 'var(--bg-input)' : 'transparent',
                   color: tab === t.id ? 'var(--text-primary)' : 'var(--text-secondary)',

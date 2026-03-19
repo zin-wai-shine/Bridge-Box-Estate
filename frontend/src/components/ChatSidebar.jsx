@@ -209,7 +209,7 @@ export default function ChatSidebar({
       <div style={{ flex: 1, overflowY: 'auto', padding: isOpen ? '0 8px 20px' : '0', marginTop: 10 }}>
         {isOpen ? (
           <>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', padding: '0 12px 8px' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', padding: '0 8px 8px' }}>
               Recent Chats
             </div>
             
@@ -219,7 +219,7 @@ export default function ChatSidebar({
                   <div
                     onClick={() => !editingId && onSelectSession(session.id)}
                     style={{
-                      padding: '10px 12px',
+                      padding: '10px 8px',
                       borderRadius: 8,
                       fontSize: 14,
                       cursor: 'pointer',

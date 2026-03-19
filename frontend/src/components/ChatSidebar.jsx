@@ -35,6 +35,7 @@ export default function ChatSidebar({
   const [editingId, setEditingId] = useState(null)
   const [editTitle, setEditTitle] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
+  const [isHeaderHovered, setIsHeaderHovered] = useState(false)
   const [isToggleHovered, setIsToggleHovered] = useState(false)
 
   const filteredSessions = sessions.filter(s => 
@@ -71,64 +72,94 @@ export default function ChatSidebar({
         position: 'relative'
       }}
     >
-      {/* Sidebar Header */}
-      <div style={{ 
-        padding: isOpen ? '24px 20px 12px' : '24px 0 12px',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: isOpen ? 'flex-start' : 'center',
-        minHeight: 100
-      }}>
+      <div 
+        onMouseEnter={() => setIsHeaderHovered(true)}
+        onMouseLeave={() => setIsHeaderHovered(false)}
+        style={{ 
+          padding: isOpen ? '24px 20px 12px' : '24px 0 12px',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: isOpen ? 'flex-start' : 'center',
+          minHeight: isOpen ? 100 : 120,
+          cursor: 'pointer'
+        }}
+      >
         {isOpen ? (
-          <div style={{
-            width: '180px',
-            height: '60px',
-            backgroundImage: `url(${whiteLogo})`,
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'left center',
-            marginLeft: 4
-          }} />
+          <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
+            <div style={{
+              width: '180px',
+              height: '60px',
+              backgroundImage: `url(${whiteLogo})`,
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'left center',
+              marginLeft: 4
+            }} />
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Sidebar</span>
+              <button 
+                onClick={(e) => { e.stopPropagation(); onToggleSidebar() }}
+                style={{
+                  background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-secondary)',
+                  fontSize: 20, cursor: 'pointer', padding: 6, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                onMouseOut={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                title="Close sidebar"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="9" y1="3" x2="9" y2="21"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         ) : (
-          <div style={{
-            width: '40px',
-            height: '40px',
-            backgroundImage: `url(${whiteIcon})`,
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center'
-          }} />
-        )}
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              backgroundImage: `url(${whiteIcon})`,
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              opacity: isHeaderHovered ? 0.3 : 1,
+              transition: 'opacity 0.2s'
+            }} />
 
-        <button 
-          onClick={onToggleSidebar}
-          style={{
-            position: 'absolute',
-            top: isOpen ? 28 : 70, // Adjust position when collapsed
-            right: isOpen ? 16 : 'auto',
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--text-secondary)',
-            fontSize: 20,
-            cursor: 'pointer',
-            padding: 6,
-            borderRadius: 8,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s',
-            zIndex: 30
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-          title={isOpen ? "Close sidebar" : "Open sidebar"}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <line x1={isOpen ? "9" : "15"} y1="3" x2={isOpen ? "9" : "15"} y2="21"/>
-          </svg>
-        </button>
+            <AnimatePresence>
+              {isHeaderHovered && (
+                <motion.button 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={(e) => { e.stopPropagation(); onToggleSidebar() }}
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    background: 'var(--accent-primary)', color: 'white',
+                    border: 'none', borderRadius: 8, padding: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', zIndex: 40,
+                    boxShadow: '0 0 15px var(--accent-glow)'
+                  }}
+                  title="Open sidebar"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="15" y1="3" x2="15" y2="21"/>
+                  </svg>
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {/* Main Navigation */}

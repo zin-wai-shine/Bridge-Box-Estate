@@ -1,8 +1,11 @@
+import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
-import ChatPage from './pages/ChatPage'
-import AdminPage from './pages/AdminPage'
+import { ChatSkeleton, AdminSkeleton } from './components/PageSkeletons'
+
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/RegisterPage'))
+const ChatPage = lazy(() => import('./pages/ChatPage'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
 
 function App() {
   const isAuthenticated = () => !!localStorage.getItem('bribox_token')
@@ -26,28 +29,32 @@ function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route
-        path="/chat"
-        element={
-          <ProtectedRoute>
-            <ChatPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute requiredRoles={['Agent', 'Admin']}>
-            <AdminPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/" element={<Navigate to="/chat" replace />} />
-      <Route path="*" element={<Navigate to="/chat" replace />} />
-    </Routes>
+    <Suspense fallback={<ChatSkeleton />}>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requiredRoles={['Agent', 'Admin']}>
+              <Suspense fallback={<AdminSkeleton />}>
+                <AdminPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/" element={<Navigate to="/chat" replace />} />
+        <Route path="*" element={<Navigate to="/chat" replace />} />
+      </Routes>
+    </Suspense>
   )
 }
 

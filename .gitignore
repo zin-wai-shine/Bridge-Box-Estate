@@ -32,3 +32,15 @@ coverage.txt
 
 # Docker
 *.log
+
+# Tauri (Desktop)
+src-tauri/target/
+
+# Capacitor (Mobile) - build caches
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/ios/App/Pods/
+
+# Root node_modules
+node_modules/
+package-lock.json

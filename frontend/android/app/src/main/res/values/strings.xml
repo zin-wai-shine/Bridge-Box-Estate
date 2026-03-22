@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">bribox</string>
+    <string name="title_activity_main">bribox</string>
+    <string name="package_name">com.bribox.app</string>
+    <string name="custom_url_scheme">com.bribox.app</string>
+</resources>

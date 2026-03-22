@@ -33,7 +33,8 @@ export default function ChatSidebar({
   onToggleSidebar,
   onLogout,
   isAdmin,
-  isOpen 
+  isOpen,
+  isLoading
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [menuOpenId, setMenuOpenId] = useState(null)
@@ -42,6 +43,8 @@ export default function ChatSidebar({
   const [showSearchInput, setShowSearchInput] = useState(false)
   const [isHeaderHovered, setIsHeaderHovered] = useState(false)
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
+  const [hoveredAdmin, setHoveredAdmin] = useState(false)
+  const [hoveredLogout, setHoveredLogout] = useState(false)
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -78,13 +81,13 @@ export default function ChatSidebar({
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       style={{
         height: '100%',
-        background: '#090909',
+        background: 'var(--bg-secondary)',
         color: 'var(--text-primary)',
         display: 'flex',
         flexDirection: 'column',
         borderRight: 'none',
         zIndex: 20,
-        overflow: 'hidden',
+        overflow: 'visible',
         position: 'relative'
       }}
     >
@@ -92,13 +95,16 @@ export default function ChatSidebar({
         onMouseEnter={() => setIsHeaderHovered(true)}
         onMouseLeave={() => setIsHeaderHovered(false)}
         style={{ 
-          padding: isOpen ? '16px 12px 12px' : '16px 0 12px',
+          paddingTop: `calc(${isOpen ? '16px' : '16px'} + env(safe-area-inset-top))`,
+          paddingRight: isOpen ? '12px' : '0px',
+          paddingBottom: '12px',
+          paddingLeft: isOpen ? '12px' : '0px',
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           alignItems: isOpen ? 'flex-start' : 'center',
-          minHeight: isOpen ? 80 : 100,
-          cursor: 'pointer'
+          minHeight: isOpen ? 40 : 100,
+          cursor: 'default'
         }}
       >
         {isOpen ? (
@@ -111,34 +117,57 @@ export default function ChatSidebar({
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'left center',
-                filter: 'brightness(0.8549)'
+                filter: 'brightness(0) saturate(100%) invert(26%) sepia(85%) saturate(718%) hue-rotate(113deg) brightness(97%) contrast(100%)'
               }} />
               <span style={{ 
                 fontSize: '16px', 
                 fontWeight: '800', 
-                color: '#dadada', 
+                color: 'var(--text-secondary)', 
                 letterSpacing: '1px'
               }}>bribox</span>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
               <button 
                 onClick={(e) => { e.stopPropagation(); onToggleSidebar() }}
-                style={{
-                  background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-secondary)',
-                  fontSize: 20, cursor: 'pointer', padding: 6, borderRadius: 8,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.2s'
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--accent-glow)'
+                  const badge = e.currentTarget.parentNode.querySelector('.hover-badge')
+                  if (badge) badge.style.opacity = '1'
                 }}
-                onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-                onMouseOut={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                title="Close sidebar"
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                  const badge = e.currentTarget.parentNode.querySelector('.hover-badge')
+                  if (badge) badge.style.opacity = '0'
+                }}
+                style={{
+                  background: 'transparent', border: 'none', color: 'var(--text-secondary)',
+                  cursor: 'pointer', width: 36, height: 36, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s', flexShrink: 0
+                }}
+                title=""
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                   <line x1="9" y1="3" x2="9" y2="21"/>
                 </svg>
               </button>
+              <motion.div 
+                className="hover-badge"
+                initial={{ opacity: 0, x: -5, y: '-50%' }}
+                animate={{ opacity: isHeaderHovered ? 1 : 0, x: 0, y: '-50%' }}
+                style={{
+                  position: 'absolute', left: '100%', top: '50%', marginLeft: 12,
+                  padding: '4px 10px', background: '#065f46',
+                  color: 'white', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                  whiteSpace: 'nowrap', zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                  border: '1px solid rgba(255,255,255,0.1)', pointerEvents: 'none',
+                  transition: { duration: 0.1, ease: 'easeOut' }
+                }}
+              >
+                Close sidebar
+              </motion.div>
             </div>
           </div>
         ) : (
@@ -148,11 +177,12 @@ export default function ChatSidebar({
               height: '40px',
               backgroundImage: `url(${briboxLogo})`,
               backgroundSize: 'contain',
-              filter: 'brightness(0.85)',
+              filter: 'brightness(0) saturate(100%) invert(26%) sepia(85%) saturate(718%) hue-rotate(113deg) brightness(97%) contrast(100%)',
               backgroundRepeat: 'no-repeat',
               backgroundPosition: 'center',
               opacity: isHeaderHovered ? 0 : 1,
-              transition: 'opacity 0.2s'
+              transition: 'opacity 0.2s',
+              zIndex: 1
             }} />
 
             <AnimatePresence>
@@ -162,20 +192,44 @@ export default function ChatSidebar({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   onClick={(e) => { e.stopPropagation(); onToggleSidebar() }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--accent-glow)'
+                    const badge = e.currentTarget.parentNode.querySelector('.hover-badge')
+                    if (badge) badge.style.opacity = '1'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent'
+                    const badge = e.currentTarget.parentNode.querySelector('.hover-badge')
+                    if (badge) badge.style.opacity = '0'
+                  }}
                   style={{
                     position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    background: '#1a1a1a', color: 'var(--text-secondary)',
-                    border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
+                    top: 2,
+                    left: 2,
+                    width: 36,
+                    height: 36,
+                    background: 'transparent', color: 'var(--text-secondary)',
+                    border: 'none', borderRadius: 8,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer', zIndex: 40,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                    margin: '0 auto'
                   }}
-                  title="Open sidebar"
                 >
+                  <motion.div 
+                    className="hover-badge"
+                    initial={{ opacity: 0, x: -5, y: '-50%' }}
+                    animate={{ opacity: 1, x: 0, y: '-50%' }}
+                    style={{
+                      position: 'absolute', left: '100%', top: '50%', marginLeft: 12,
+                      padding: '4px 10px', background: '#065f46',
+                      color: 'white', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                      whiteSpace: 'nowrap', zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                      border: '1px solid rgba(255,255,255,0.1)', pointerEvents: 'none',
+                      transition: { duration: 0.1, ease: 'easeOut' }
+                    }}
+                  >
+                    Open sidebar
+                  </motion.div>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                     <line x1="15" y1="3" x2="15" y2="21"/>
@@ -188,19 +242,23 @@ export default function ChatSidebar({
       </div>
 
       {/* Main Navigation */}
-      <div style={{ padding: isOpen ? '0 8px 10px' : '0' }}>
-        <NavButton 
-          icon={HiPlus} 
-          label="New chat" 
-          onClick={onNewChat} 
-          collapsed={!isOpen} 
-        />
-        <NavButton 
-          icon={HiMagnifyingGlass} 
-          label="Search chats" 
-          onClick={() => setIsSearchModalOpen(true)} 
-          collapsed={!isOpen}
-        />
+      <div style={{ position: 'relative', overflow: 'visible', zIndex: 10 }}>
+        <div style={{ padding: isOpen ? '0 8px 10px' : '0', overflow: 'visible' }}>
+          <NavButton 
+            icon={HiPlus} 
+            label="New chat" 
+            onClick={onNewChat} 
+            collapsed={!isOpen} 
+            isLoading={isLoading}
+          />
+          <NavButton 
+            icon={HiMagnifyingGlass} 
+            label="Search chats" 
+            onClick={() => setIsSearchModalOpen(true)} 
+            collapsed={!isOpen}
+            isLoading={isLoading}
+          />
+        </div>
         
         {/* Search Modal */}
         <SearchModal 
@@ -216,17 +274,24 @@ export default function ChatSidebar({
       <div style={{ flex: 1, overflowY: 'auto', padding: isOpen ? '0 8px 20px' : '0', marginTop: 10 }}>
         {isOpen ? (
           <>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', padding: '0 8px 8px' }}>
-              Recent Chats
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', padding: '0 12px 12px', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.8 }}>
+              Your chats
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {filteredSessions.map((session) => (
-                <div key={session.id} style={{ position: 'relative' }}>
+              {isLoading ? (
+                <>
+                  {[1, 2, 3, 4].map(i => (
+                    <MenuSkeleton key={i} />
+                  ))}
+                </>
+              ) : (
+                filteredSessions.map((session) => (
+                  <div key={session.id} style={{ position: 'relative' }}>
                   <div
                     onClick={() => !editingId && onSelectSession(session.id)}
                     style={{
-                      padding: '10px 8px',
+                      padding: '4px 12px',
                       borderRadius: 8,
                       fontSize: 14,
                       cursor: 'pointer',
@@ -235,13 +300,14 @@ export default function ChatSidebar({
                       justifyContent: 'flex-start',
                       gap: 12,
                       background: activeSessionId === session.id ? 'var(--accent-glow)' : 'transparent',
-                      color: activeSessionId === session.id ? 'var(--accent-primary)' : 'var(--text-primary)',
+                      color: 'var(--text-primary)',
                       border: activeSessionId === session.id ? '1px solid var(--accent-glow)' : '1px solid transparent',
+                      borderRadius: 8,
                       transition: 'all 0.2s',
                       position: 'relative'
                     }}
                     onMouseOver={(e) => {
-                      if (activeSessionId !== session.id) e.currentTarget.style.background = 'var(--bg-secondary)'
+                      if (activeSessionId !== session.id) e.currentTarget.style.background = 'var(--bg-input)'
                       const actions = e.currentTarget.querySelector('.session-actions')
                       if (actions) actions.style.opacity = '1'
                     }}
@@ -269,17 +335,15 @@ export default function ChatSidebar({
                         }}
                       />
                     ) : (
-                      <>
-                        <HiChatBubbleLeft style={{ flexShrink: 0 }} />
                         <span style={{ 
                           whiteSpace: 'nowrap', 
                           overflow: 'hidden', 
                           textOverflow: 'ellipsis', 
-                          flex: 1 
+                          flex: 1,
+                          fontWeight: 500
                         }}>
                           {session.title}
                         </span>
-                      </>
                     )}
 
                     {session.is_pinned && <HiBookmark style={{ fontSize: 12, color: '#b4b4b4' }} />}
@@ -302,7 +366,7 @@ export default function ChatSidebar({
                         transition: 'opacity 0.2s'
                       }}
                     >
-                      <HiEllipsisHorizontal />
+                      <HiEllipsisHorizontal style={{ fontSize: 22 }} />
                     </button>
                   </div>
 
@@ -323,8 +387,8 @@ export default function ChatSidebar({
                             top: '100%',
                             right: 0,
                             width: 200,
-                            background: '#2f2f2f',
-                            border: '1px solid #494949',
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--border)',
                             borderRadius: 12,
                             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
                             padding: 6,
@@ -367,59 +431,42 @@ export default function ChatSidebar({
                     )}
                   </AnimatePresence>
                 </div>
-              ))}
+                ))
+              )}
             </div>
           </>
         ) : null}
       </div>
 
-      {/* Sidebar Footer */}
-      <div style={{ padding: '8px', borderTop: '1px solid rgba(255,255,255,0.03)', background: 'rgba(0,0,0,0.2)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: isOpen ? 'flex-start' : 'center', gap: 4 }}>
+      <div style={{ 
+        marginTop: 'auto', 
+        padding: '12px 0', 
+        borderTop: '1px solid rgba(255,255,255,0.03)', 
+        background: 'transparent', 
+        width: '100%',
+        overflow: 'visible'
+      }}>
+        <div style={{ padding: isOpen ? '0 8px' : '0', display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
           {isAdmin && (
-            <Link to="/admin" title="Admin Settings" style={{ textDecoration: 'none' }}>
-              <div 
-                style={{
-                  width: isOpen ? 'auto' : 44,
-                  padding: '10px 12px',
-                  borderRadius: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s'
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-                onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-              >
-                <HiCog8Tooth style={{ fontSize: 20 }} />
-                {isOpen && <span style={{ fontSize: 13, fontWeight: 500 }}>Settings</span>}
-              </div>
+            <Link to="/admin" style={{ textDecoration: 'none', width: '100%' }}>
+              <NavButton 
+                icon={HiCog8Tooth}
+                label="Settings"
+                onClick={() => {}}
+                collapsed={!isOpen}
+              />
             </Link>
           )}
-          
           <div 
             onClick={onLogout}
-            title="Logout"
-            style={{
-              flex: isOpen ? 1 : 'none',
-              width: isOpen ? 'auto' : 44,
-              padding: '10px 12px',
-              borderRadius: 8,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-              justifyContent: isOpen ? 'flex-start' : 'center'
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-            onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+            style={{ width: '100%' }}
           >
-            <HiArrowRightOnRectangle style={{ fontSize: 20 }} />
-            {isOpen && <span style={{ fontSize: 13, fontWeight: 500 }}>Logout</span>}
+            <NavButton 
+              icon={HiArrowRightOnRectangle}
+              label="Logout"
+              onClick={() => {}}
+              collapsed={!isOpen}
+            />
           </div>
         </div>
       </div>
@@ -427,34 +474,85 @@ export default function ChatSidebar({
   )
 }
 
-function NavButton({ icon: Icon, label, onClick, collapsed }) {
+export function MenuSkeleton() {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        width: collapsed ? 44 : 'calc(100% - 12px)',
-        margin: collapsed ? '0 auto' : '0 6px',
-        padding: '10px 12px',
-        background: 'transparent',
-        border: 'none',
-        borderRadius: 8,
-        color: 'var(--text-primary)',
-        fontSize: 14,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: collapsed ? 'center' : 'flex-start',
-        gap: collapsed ? 0 : 12,
-        cursor: 'pointer',
-        transition: 'all 0.2s',
-        minHeight: 44
-      }}
-      onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-      onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-      title={collapsed ? label : undefined}
-    >
-      <Icon style={{ fontSize: 20, color: 'var(--text-secondary)', flexShrink: 0 }} />
-      {!collapsed && label}
-    </button>
+    <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div className="skeleton-pulse" style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.05)', flexShrink: 0 }} />
+      <div className="skeleton-pulse" style={{ width: '70%', height: 16, borderRadius: 4, background: 'rgba(255,255,255,0.03)' }} />
+    </div>
+  )
+}
+
+function NavButton({ icon: Icon, label, onClick, collapsed, isLoading }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div style={{ position: 'relative', height: collapsed ? 36 : 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', width: collapsed ? 36 : '100%', margin: collapsed ? '0 auto' : '0' }}>
+      {collapsed && (
+        <motion.div 
+          initial={{ opacity: 0, x: -5, y: '-50%' }}
+          animate={{ opacity: hovered ? 1 : 0, x: 0, y: '-50%' }}
+          style={{
+            position: 'absolute',
+            left: '100%',
+            top: '50%',
+            marginLeft: 12,
+            padding: '4px 10px',
+            background: '#065f46',
+            color: 'white',
+            borderRadius: 6,
+            fontSize: 11,
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+            zIndex: 100,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            pointerEvents: 'none',
+            transition: { duration: 0.1, ease: 'easeOut' }
+          }}
+        >
+          {label}
+        </motion.div>
+      )}
+      <button
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          width: collapsed ? 36 : '100%',
+          height: collapsed ? 36 : 'auto',
+          margin: collapsed ? '0 auto' : '0',
+          padding: collapsed ? '0' : '4px 0',
+          background: !collapsed && hovered ? 'var(--accent-glow)' : 'transparent',
+          border: 'none',
+          borderRadius: 8,
+          color: 'var(--text-primary)',
+          fontSize: 14,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          gap: collapsed ? 0 : 12,
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+          minHeight: collapsed ? 36 : 32
+        }}
+      >
+        <div style={{ 
+          width: 36, height: 36, borderRadius: 8, 
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background 0.2s', flexShrink: 0,
+          background: collapsed && hovered ? 'var(--accent-glow)' : 'transparent'
+        }}>
+          <Icon style={{ fontSize: 20, color: 'var(--text-secondary)', flexShrink: 0 }} />
+        </div>
+        {!collapsed && (
+          isLoading ? (
+            <div className="skeleton-pulse" style={{ height: 16, width: 80, borderRadius: 4, background: 'rgba(255,255,255,0.05)', marginLeft: 0 }} />
+          ) : (
+            <span style={{ fontSize: 13, fontWeight: 500, flex: 1, textAlign: 'left', marginLeft: 0 }}>{label}</span>
+          )
+        )}
+      </button>
+    </div>
   )
 }
 
@@ -464,24 +562,30 @@ function MenuButton({ icon: Icon, label, onClick, danger }) {
       onClick={onClick}
       style={{
         width: '100%',
-        padding: '10px 12px',
+        padding: '4px 12px',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
         background: 'transparent',
         border: 'none',
         borderRadius: 8,
-        color: danger ? '#ef4444' : '#ececec',
+        color: danger ? '#ef4444' : 'var(--text-primary)',
         fontSize: 14,
         cursor: 'pointer',
         textAlign: 'left',
         transition: 'background 0.2s'
       }}
-      onMouseOver={(e) => (e.currentTarget.style.background = '#212121')}
-      onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+      onMouseEnter={() => (document.getElementById(`menu-icon-${id}`) || {}).style && (document.getElementById(`menu-icon-${id}`).style.background = 'white')}
+      onMouseLeave={() => (document.getElementById(`menu-icon-${id}`) || {}).style && (document.getElementById(`menu-icon-${id}`).style.background = 'transparent')}
     >
-      <Icon style={{ fontSize: 18 }} />
-      {label}
+      <div id={`menu-icon-${id}`} className="icon-circle" style={{ 
+        width: 32, height: 32, borderRadius: 8, 
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'background 0.2s', flexShrink: 0
+      }}>
+        <Icon style={{ fontSize: 20, color: 'var(--text-secondary)', flexShrink: 0 }} />
+      </div>
+      <span style={{ marginLeft: 8 }}>{label}</span>
     </button>
   )
 }

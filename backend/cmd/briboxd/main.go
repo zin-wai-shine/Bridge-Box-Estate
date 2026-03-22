@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/bribox/backend/internal/auth"
@@ -33,10 +34,30 @@ func main() {
 		c.Next()
 	})
 
-	// CORS middleware
+	// CORS middleware – supports web, Capacitor (mobile), and Tauri (desktop)
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{cfg.AllowOrigins},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowOriginFunc: func(origin string) bool {
+			// Always allow configured origin(s)
+			for _, allowed := range strings.Split(cfg.AllowOrigins, ",") {
+				if strings.TrimSpace(allowed) == "*" || strings.TrimSpace(allowed) == origin {
+					return true
+				}
+			}
+			// Allow Capacitor native origins
+			if origin == "capacitor://localhost" || origin == "https://localhost" {
+				return true
+			}
+			// Allow Tauri native origins
+			if origin == "tauri://localhost" || origin == "https://tauri.localhost" {
+				return true
+			}
+			// Allow local development
+			if strings.HasPrefix(origin, "http://localhost") || strings.HasPrefix(origin, "http://127.0.0.1") {
+				return true
+			}
+			return false
+		},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,

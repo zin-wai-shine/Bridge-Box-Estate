@@ -24,7 +24,9 @@ import {
 } from 'react-icons/hi2'
 import briboxLogo from '../assets/logo/bribox.svg'
 import { sendMessage, getSessions, createSession, updateSession, deleteSession, getSessionHistory } from '../services/api'
-import ChatSidebar from '../components/ChatSidebar'
+import ChatSidebar, { MenuSkeleton } from '../components/ChatSidebar'
+import { listen } from '@tauri-apps/api/event'
+import { pickImage, isNative } from '../services/native'
 
 const quickActions = [
   { label: 'Find a Home', icon: HiMagnifyingGlass, message: 'Find me available properties' },
@@ -38,8 +40,8 @@ function PropertyStack({ properties, onClick }) {
   const firstProp = properties[0]
   
   const containerVariants = {
-    initial: { background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.08)' },
-    hover: { background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.12)' }
+    initial: { background: 'rgba(16, 185, 129, 0.03)', borderColor: 'rgba(16, 185, 129, 0.12)' },
+    hover: { background: 'rgba(16, 185, 129, 0.06)', borderColor: 'rgba(16, 185, 129, 0.25)' }
   }
 
   const iconVariants = {
@@ -77,7 +79,7 @@ function PropertyStack({ properties, onClick }) {
         }}
         style={{
           position: 'absolute', inset: -1, zIndex: 0,
-          background: 'conic-gradient(from var(--border-angle), transparent, rgba(255,255,255,0.15), transparent 30%)',
+          background: 'conic-gradient(from var(--border-angle), transparent, var(--accent-primary), transparent 30%)',
           borderRadius: 12,
           maskImage: 'linear-gradient(black, black), linear-gradient(black, black)',
           maskClip: 'content-box, border-box',
@@ -108,7 +110,7 @@ function PropertyStack({ properties, onClick }) {
           {count > 1 && (
             <div style={{ 
               position: 'absolute', top: -3, left: 3, width: '100%', height: '100%', 
-              background: 'rgba(255,255,255,0.05)', borderRadius: 9, 
+              background: 'rgba(34,197,94,0.1)', borderRadius: 9, 
               zIndex: 1
             }} />
           )}
@@ -116,7 +118,7 @@ function PropertyStack({ properties, onClick }) {
           {/* Main Image */}
           <div style={{ 
             position: 'relative', width: '100%', height: '100%', 
-            borderRadius: 9, overflow: 'hidden', zIndex: 2, background: '#222',
+            borderRadius: 9, overflow: 'hidden', zIndex: 2, background: 'var(--bg-secondary)',
             border: '0.5px solid rgba(255,255,255,0.1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
@@ -143,7 +145,7 @@ function PropertyStack({ properties, onClick }) {
             {count} {count === 1 ? 'property' : 'properties'} found
           </div>
           <div style={{ 
-            fontSize: 14, fontWeight: 400, color: 'white',
+            fontSize: 14, fontWeight: 400, color: 'var(--text-primary)',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
           }}>
             {firstProp.city || firstProp.address} {count > 1 ? '& more' : ''}
@@ -173,22 +175,14 @@ function PropertyModal({ properties, onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', padding: 40
-      }}
+      className="modal-overlay"
       onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        style={{
-          width: '100%', height: '100%', overflow: 'hidden',
-          background: '#0a0a0a', border: 'none',
-          borderRadius: 32, padding: 32, position: 'relative',
-          display: 'flex', flexDirection: 'column'
-        }}
+        className="modal-content"
         onClick={e => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -197,7 +191,7 @@ function PropertyModal({ properties, onClose }) {
           marginBottom: 24, flexShrink: 0
         }}>
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 750, color: 'white', letterSpacing: -0.5 }}>Property Results</h2>
+            <h2 style={{ fontSize: 20, fontWeight: 750, color: 'var(--text-primary)', letterSpacing: -0.5 }}>Property Results</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Showing {properties.length} matching properties</p>
           </div>
           <button 
@@ -216,10 +210,10 @@ function PropertyModal({ properties, onClose }) {
         </div>
 
         {/* Main Content: Two Columns */}
-        <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 32, flex: 1, overflow: 'hidden' }}>
+        <div className="modal-grid">
           
           {/* Left Column: Property List */}
-          <div style={{ overflowY: 'auto', paddingRight: 10, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className="modal-grid-child modal-left-col" style={{ gap: 20 }}>
             {properties.map((property, idx) => (
               <motion.div 
                 key={idx}
@@ -235,7 +229,7 @@ function PropertyModal({ properties, onClose }) {
                   transition: 'all 0.2s'
                 }}
               >
-                <div style={{ position: 'relative', height: 350, borderRadius: 32, overflow: 'hidden', background: '#1a1a1a', marginBottom: 16, border: 'none', outline: 'none' }}>
+                <div style={{ position: 'relative', height: 350, borderRadius: 32, overflow: 'hidden', background: 'var(--bg-secondary)', marginBottom: 16, border: 'none', outline: 'none' }}>
                   {property.image_url ? (
                     <motion.img 
                       src={property.image_url} 
@@ -253,7 +247,7 @@ function PropertyModal({ properties, onClose }) {
                 </div>
 
                 <div style={{ padding: '0 4px' }}>
-                  <h3 style={{ fontSize: 15, fontWeight: 400, color: 'white', marginBottom: 4 }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 400, color: 'var(--text-primary)', marginBottom: 4 }}>
                     {property.address}
                   </h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8 }}>
@@ -269,15 +263,15 @@ function PropertyModal({ properties, onClose }) {
           </div>
 
           {/* Right Column: Property Detail View */}
-          <div style={{ overflowY: 'auto', borderRadius: 24, background: 'transparent', padding: 0 }}>
+          <div className="modal-grid-child modal-right-col" style={{ borderRadius: 24, background: 'transparent', padding: 0 }}>
             {activeProperty && (
               <div className="animate-fade-in" style={{ paddingBottom: 40 }}>
                 {/* Photo Grid Structure */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 12, height: 450, marginBottom: 32, borderRadius: 24, overflow: 'hidden' }}>
+                <div className="mobile-photo-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 12, height: 450, marginBottom: 32, borderRadius: 24, overflow: 'hidden' }}>
                   <div style={{ background: '#1a1a1a', position: 'relative', border: 'none', outline: 'none' }}>
                      <img src={activeProperty.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', border: 'none', outline: 'none' }} />
                   </div>
-                  <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 12 }}>
+                  <div className="mobile-photo-grid-sub" style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 12 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                        <div style={{ background: '#1a1a1a', border: 'none', outline: 'none' }}><img src={activeProperty.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5, border: 'none', outline: 'none' }} /></div>
                        <div style={{ background: '#1a1a1a', border: 'none', outline: 'none' }}><img src={activeProperty.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3, border: 'none', outline: 'none' }} /></div>
@@ -307,7 +301,7 @@ function PropertyModal({ properties, onClose }) {
                     { label: 'Area', value: `${activeProperty.square_footage?.toLocaleString()} Sqm`, icon: HiArrowsPointingOut },
                     { label: '฿/Sqm', value: `฿${Math.round(activeProperty.price / activeProperty.square_footage).toLocaleString()}`, icon: HiOutlineBanknotes },
                   ].map((item, i) => (
-                    <div key={i} style={{ background: '#0d0d0d', padding: '24px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div key={i} style={{ background: 'var(--bg-card)', padding: '24px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
                       <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
                         <item.icon style={{ fontSize: 20 }} />
                       </div>
@@ -321,7 +315,7 @@ function PropertyModal({ properties, onClose }) {
 
                 {/* About Listing Section */}
                 <div style={{ padding: '0 8px' }}>
-                  <h3 style={{ fontSize: 24, fontWeight: 700, color: 'white', marginBottom: 12 }}>About this listing</h3>
+                  <h3 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>About this listing</h3>
                   <p style={{ color: 'var(--text-secondary)', fontSize: 16, lineHeight: 1.8, maxWidth: '90%' }}>
                     {activeProperty.description || "Experience refined living in this exceptional property. Featuring modern architectural design, high-end finishes, and thoughtful layouts that maximize space and natural light. Perfect for those seeking both comfort and style."}
                   </p>
@@ -389,7 +383,7 @@ function renderMarkdown(text) {
     if (line.startsWith('- ')) {
       return (
         <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 2, paddingLeft: 4 }}>
-          <span style={{ color: '#a3a3a3' }}>•</span>
+          <span style={{ color: 'var(--text-secondary)' }}>•</span>
           <span>{renderBold(line.slice(2))}</span>
         </div>
       )
@@ -473,12 +467,55 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(typeof window !== 'undefined' ? window.innerWidth > 768 : true)
   const [selectedProperty, setSelectedProperty] = useState(null)
+  const [attachment, setAttachment] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [hoveredPlus, setHoveredPlus] = useState(false)
+  const [hoveredBolt, setHoveredBolt] = useState(false)
+  
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
+  
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const user = JSON.parse(localStorage.getItem('bribox_user') || '{}')
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false)
+    }, 1200)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Setup Tauri drag & drop listener
+  useEffect(() => {
+    if (!window.__TAURI__) return
+
+    let unlistenDrop
+    let unlistenHover
+    let unlistenCancel
+
+    async function setupListeners() {
+      unlistenDrop = await listen('tauri://drag-drop', event => {
+        setIsDragging(false)
+        if (event.payload?.paths && event.payload.paths.length > 0) {
+          const filepath = event.payload.paths[0]
+          setAttachment({ name: filepath.split(/[/\\]/).pop(), isFile: true, path: filepath })
+          setInput(prev => prev + `[Attached: ${filepath.split(/[/\\]/).pop()}] `)
+        }
+      })
+      unlistenHover = await listen('tauri://drag-enter', () => setIsDragging(true))
+      unlistenCancel = await listen('tauri://drag-leave', () => setIsDragging(false))
+    }
+
+    setupListeners()
+
+    return () => {
+      if (unlistenDrop) unlistenDrop()
+      if (unlistenHover) unlistenHover()
+      if (unlistenCancel) unlistenCancel()
+    }
+  }, [])
   useEffect(() => {
     fetchSessions()
   }, [])
@@ -585,9 +622,10 @@ export default function ChatPage() {
       }
       setMessages(prev => [...prev, aiMsg])
     } catch (err) {
+      console.error('Failed to send message:', err)
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
-        content: 'Sorry, something went wrong. Please try again.',
+        content: 'Sorry, I encountered an error connecting to the Bridge Engine.',
         role: 'ai',
         timestamp: new Date().toISOString(),
         error: true
@@ -595,6 +633,18 @@ export default function ChatPage() {
     } finally {
       setLoading(false)
       inputRef.current?.focus()
+    }
+  }
+
+  const handleAttachment = async () => {
+    try {
+      const photo = await pickImage()
+      if (photo?.dataUrl) {
+        setAttachment({ dataUrl: photo.dataUrl, format: photo.format })
+        setInput(prev => prev + `[Image Attached] `)
+      }
+    } catch (err) {
+      console.log('Image picker cancelled or failed:', err)
     }
   }
 
@@ -614,29 +664,59 @@ export default function ChatPage() {
   const isAgent = user.role === 'Agent' || user.role === 'Admin'
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-primary)', overflow: 'hidden' }}>
-      {/* Sidebar */}
-      <ChatSidebar
-        isOpen={sidebarOpen}
-        sessions={sessions}
-        activeSessionId={activeSessionId}
-        onSelectSession={handleSelectSession}
-        onNewChat={handleNewChat}
-        onUpdateSession={handleUpdateSession}
-        onDeleteSession={handleDeleteSession}
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        onLogout={handleLogout}
-        isAdmin={isAgent}
-      />
+    <div className="chat-layout">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div 
+          className="md:hidden"
+          style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 45 }}
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+      {/* Sidebar */}
+      <div className={`chat-sidebar-wrapper ${sidebarOpen ? 'mobile-open' : ''}`}>
+        <ChatSidebar
+          isOpen={sidebarOpen}
+          sessions={sessions}
+          activeSessionId={activeSessionId}
+          onSelectSession={(id) => { handleSelectSession(id); setSidebarOpen(false); }}
+          onNewChat={() => { handleNewChat(); setSidebarOpen(false); }}
+          onUpdateSession={handleUpdateSession}
+          onDeleteSession={handleDeleteSession}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onLogout={handleLogout}
+          isAdmin={isAgent}
+        />
+      </div>
+
+      <div className="chat-main-area">
+        {/* Mobile Top Bar */}
+        <div className="mobile-top-bar">
+          <button 
+            onClick={() => setSidebarOpen(true)}
+            style={{ background: 'transparent', border: 'none', color: 'white', display: 'flex', alignItems: 'center' }}
+          >
+            <HiBars3 style={{ fontSize: 24 }} />
+          </button>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>BriBox</div>
+          <button 
+            onClick={handleNewChat}
+            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
+          >
+            <HiPlus style={{ fontSize: 22 }} />
+          </button>
+        </div>
 
         {/* Messages Area */}
-        <div style={{
-          flex: 1, overflowY: 'auto', padding: '24px 24px 40px',
-          display: 'flex', flexDirection: 'column',
-          background: 'transparent'
-        }}>
+        <div 
+          className="mobile-chat-padding"
+          style={{
+            flex: 1, overflowY: 'auto', padding: '24px 24px 40px',
+            display: 'flex', flexDirection: 'column',
+            background: 'transparent'
+          }}
+        >
           <div style={{ maxWidth: 720, width: '100%', margin: '0 auto', flex: 1 }}>
             {/* Welcome state */}
             {messages.length === 0 && (
@@ -653,7 +733,7 @@ export default function ChatPage() {
                     width: 48, height: 48, margin: '0 auto 16px',
                     backgroundImage: `url(${briboxLogo})`,
                     backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
-                    filter: 'brightness(0.9)'
+                    filter: 'brightness(0) saturate(100%) invert(26%) sepia(85%) saturate(718%) hue-rotate(113deg) brightness(97%) contrast(100%)'
                   }}
                 />
                 <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>
@@ -680,20 +760,23 @@ export default function ChatPage() {
                     marginBottom: 16
                   }}
                 >
-                  <div style={{
-                    maxWidth: msg.role === 'user' ? '80%' : '100%',
-                    padding: msg.role === 'user' ? '12px 18px' : '8px 0',
-                    background: msg.role === 'user' ? 'rgba(255,255,255,0.05)' : 'transparent',
-                    borderRadius: msg.role === 'user' ? 24 : 0,
-                    color: msg.error ? 'var(--danger)' : 'var(--text-primary)',
-                    fontSize: 15,
-                    lineHeight: 1.6,
-                    boxShadow: 'none',
-                    border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                    transition: 'all 0.2s ease'
-                  }}>
+                  <div 
+                    className="message-bubble"
+                    style={{
+                      maxWidth: msg.role === 'user' ? '80%' : '100%',
+                      padding: msg.role === 'user' ? '12px 18px' : '8px 0',
+                      background: msg.role === 'user' ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
+                      borderRadius: msg.role === 'user' ? 24 : 0,
+                      color: msg.error ? 'var(--danger)' : 'var(--text-primary)',
+                      fontSize: 15,
+                      lineHeight: 1.6,
+                      boxShadow: 'none',
+                      border: msg.role === 'user' ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
                     {msg.role === 'ai' && (
-                      <div style={{ color: '#dadada', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 2, transform: 'translateX(-4px)' }}>
+                      <div style={{ color: 'var(--text-muted)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 2, transform: 'translateX(-4px)' }}>
                         <div style={{
                           width: '45px',
                           height: '45px',
@@ -701,11 +784,12 @@ export default function ChatPage() {
                           backgroundSize: 'contain',
                           backgroundRepeat: 'no-repeat',
                           backgroundPosition: 'left center',
-                          filter: 'brightness(0.9)',
+                          filter: 'brightness(0) saturate(100%) invert(26%) sepia(85%) saturate(718%) hue-rotate(113deg) brightness(97%) contrast(100%)' ,
                           position: 'relative',
                           top: '1px'
                         }} />
                         <span style={{ 
+                          color: 'var(--text-secondary)',
                           fontSize: '16px', 
                           fontWeight: '800', 
                           letterSpacing: '0.5px',
@@ -750,11 +834,15 @@ export default function ChatPage() {
         </div>
 
         {/* Bottom Input Area */}
-        <div style={{
-          borderTop: 'none',
-          background: 'transparent',
-          padding: '0 24px 16px',
-        }}>
+        <div 
+          className="mobile-input-area"
+          style={{
+            borderTop: 'none',
+            background: 'transparent',
+            padding: '0 24px 16px',
+            paddingBottom: 'calc(16px + env(safe-area-inset-bottom))'
+          }}
+        >
           <div style={{ maxWidth: 740, margin: '0 auto', background: 'transparent' }}>
             {/* Quick Actions */}
             {messages.length === 0 && (
@@ -772,21 +860,21 @@ export default function ChatPage() {
                     style={{ 
                       fontSize: 12, 
                       borderRadius: 16,
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.08)',
+                      background: 'rgba(16, 185, 129, 0.04)',
+                      border: '1px solid var(--border)',
                       color: 'var(--text-secondary)',
                       transition: 'all 0.2s ease',
                       cursor: 'pointer'
                     }}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                      e.currentTarget.style.color = 'var(--text-primary)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                      e.currentTarget.style.background = 'rgba(16, 185, 129, 0.08)';
+                      e.currentTarget.style.color = 'var(--accent-primary)';
+                      e.currentTarget.style.borderColor = 'var(--accent-primary)';
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                      e.currentTarget.style.background = 'rgba(16, 185, 129, 0.04)';
                       e.currentTarget.style.color = 'var(--text-secondary)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                      e.currentTarget.style.borderColor = 'var(--border)';
                     }}
                   >
                     {action.label}
@@ -795,22 +883,23 @@ export default function ChatPage() {
               </motion.div>
             )}
 
-            {/* Tactical Input Bar */}
             <div 
+              className="tactical-input-bar"
               style={{ 
                 borderRadius: 24, 
-                border: '1px solid rgba(255,255,255,0.12)',
+                border: isDragging ? '2px dashed var(--accent-primary)' : '1px solid var(--border)',
                 padding: '16px 24px',
                 display: 'flex',
                 flexDirection: 'column',
-                minHeight: 120,
+                minHeight: 'auto',
                 position: 'relative',
-                background: 'rgba(255,255,255,0.04)',
+                background: isDragging ? 'rgba(16, 185, 129, 0.05)' : 'var(--bg-card)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
                 transition: 'all 0.3s ease'
               }}
             >
               {/* Top Right Indicator Dot */}
-              <div style={{ position: 'absolute', top: 16, right: 20, width: 8, height: 8, borderRadius: '50%', background: '#7c4dff', boxShadow: '0 0 10px #7c4dff' }} />
+              <div style={{ position: 'absolute', top: 16, right: 12, width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-glow)' }} />
 
               <textarea 
                 ref={inputRef}
@@ -834,23 +923,50 @@ export default function ChatPage() {
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.15)', color: '#9aa0a6', cursor: 'pointer' }}>
-                    <HiPlus style={{ fontSize: 18 }} />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', color: '#9aa0a6' }}>
-                    <HiBolt style={{ fontSize: 16 }} />
-                  </div>
+                  <motion.div 
+                    onMouseEnter={() => setHoveredPlus(true)}
+                    onMouseLeave={() => setHoveredPlus(false)}
+                    onClick={handleAttachment}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{ 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                      width: 36, height: 36, borderRadius: '50%', 
+                      cursor: 'pointer', transition: 'all 0.2s',
+                      background: hoveredPlus ? 'var(--accent-primary)' : (attachment ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.08)'),
+                      color: hoveredPlus ? 'white' : 'var(--accent-primary)',
+                      border: 'none'
+                    }}
+                  >
+                    <HiPlus style={{ fontSize: 20 }} />
+                  </motion.div>
+                  <motion.div 
+                    onMouseEnter={() => setHoveredBolt(true)}
+                    onMouseLeave={() => setHoveredBolt(false)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{ 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                      width: 36, height: 36, borderRadius: '50%', 
+                      background: hoveredBolt ? 'var(--accent-primary)' : 'rgba(16, 185, 129, 0.08)', 
+                      border: 'none', 
+                      color: hoveredBolt ? 'white' : 'var(--accent-primary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <HiBolt style={{ fontSize: 18 }} />
+                  </motion.div>
                 </div>
 
                 <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                  <HiMicrophone style={{ color: '#9aa0a6', fontSize: 20, cursor: 'pointer' }} />
                   <motion.button 
                     onClick={() => handleSend()}
                     disabled={!input.trim() || loading}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     style={{ 
-                      background: 'white', color: 'black', border: 'none', borderRadius: '50%',
+                      background: 'var(--accent-primary)', color: 'white', border: 'none', borderRadius: '50%',
                       width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       cursor: (input.trim() && !loading) ? 'pointer' : 'default', 
                       opacity: (loading || !input.trim()) ? 0.3 : 1, 

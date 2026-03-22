@@ -1,6 +1,15 @@
 import axios from 'axios'
+import { Capacitor } from '@capacitor/core'
 
-const API_BASE = '/api/v1'
+// Detect platform: native apps need the full production URL, web uses Vite proxy
+const isNative = typeof window !== 'undefined' && (
+  window.__TAURI__ ||             // Tauri desktop
+  (Capacitor && Capacitor.isNativePlatform()) // Capacitor mobile
+)
+
+const API_BASE = isNative
+  ? (import.meta.env.VITE_API_URL || 'https://bribox-bridge-app.fly.dev/api/v1')
+  : '/api/v1'
 
 const api = axios.create({
   baseURL: API_BASE,

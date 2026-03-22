@@ -1,0 +1,26 @@
+{
+  "name": "bribox",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BriBox — AI-Powered Real Estate Bridge Platform",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "desktop:dev": "npx tauri dev",
+    "desktop:build": "npx tauri build",
+    "mobile:sync": "cd frontend && npm run mobile:sync",
+    "mobile:run:android": "cd frontend && npm run mobile:run:android",
+    "mobile:run:ios": "cd frontend && npm run mobile:run:ios",
+    "mobile:open:android": "cd frontend && npm run mobile:open:android",
+    "mobile:open:ios": "cd frontend && npm run mobile:open:ios"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zin-wai-shine/Bridge-Box-Estate.git"
+  },
+  "author": "BriBox Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.6.1"
+  }
+}

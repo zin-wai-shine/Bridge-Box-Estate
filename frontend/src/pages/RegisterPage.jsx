@@ -124,14 +124,14 @@ export default function RegisterPage() {
             <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>
               I am a...
             </label>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {roles.map((r) => (
                 <motion.button
                   key={r}
                   type="button"
                   onClick={() => setRole(r)}
                   className={role === r ? 'btn btn-primary' : 'btn btn-secondary'}
-                  style={{ flex: 1, fontSize: 13 }}
+                  style={{ flex: 1, minWidth: '30%', fontSize: 13, padding: '10px 4px', display: 'flex', justifyContent: 'center' }}
                   whileHover={{ 
                     scale: 1.02, 
                     y: role === r ? -2 : 0, 

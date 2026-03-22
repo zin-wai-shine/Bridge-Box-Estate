@@ -102,9 +102,9 @@ export default function SearchModal({
             style={{
               width: '100%',
               maxWidth: '640px',
-              background: '#1a1a1a',
+              background: 'var(--bg-card)',
               borderRadius: 20,
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(34, 197, 94, 0.08)',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
               overflow: 'hidden',
               display: 'flex',
@@ -118,7 +118,7 @@ export default function SearchModal({
               display: 'flex',
               alignItems: 'center',
               gap: 12,
-              borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+              borderBottom: '1px solid rgba(34, 197, 94, 0.05)',
             }}>
               <HiMagnifyingGlass style={{ fontSize: 22, color: 'var(--text-muted)' }} />
               <input
@@ -132,7 +132,7 @@ export default function SearchModal({
                   background: 'transparent',
                   border: 'none',
                   outline: 'none',
-                  color: 'white',
+                  color: 'var(--text-primary)',
                   fontSize: 16,
                   fontFamily: 'inherit',
                 }}
@@ -140,7 +140,7 @@ export default function SearchModal({
               <button 
                 onClick={onClose}
                 style={{
-                  background: 'transparent',
+                  background: 'rgba(16, 185, 129, 0.05)',
                   border: 'none',
                   color: 'var(--text-muted)',
                   cursor: 'pointer',
@@ -148,7 +148,7 @@ export default function SearchModal({
                   padding: 4,
                   borderRadius: 6,
                 }}
-                onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                onMouseOver={e => e.currentTarget.style.background = 'var(--accent-glow)'}
                 onMouseOut={e => e.currentTarget.style.background = 'transparent'}
               >
                 <HiXMark style={{ fontSize: 20 }} />
@@ -173,18 +173,18 @@ export default function SearchModal({
                   alignItems: 'center',
                   gap: 12,
                   cursor: 'pointer',
-                  background: selectedIndex === 0 ? 'rgba(255,255,255,0.05)' : 'transparent',
+                  background: selectedIndex === 0 ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
                   transition: 'background 0.2s',
                 }}
                 onMouseOver={() => setSelectedIndex(0)}
               >
                 <div style={{ 
-                  width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.1)',
+                  width: 32, height: 32, borderRadius: 8, background: 'rgba(16, 185, 129, 0.1)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  <HiPlus style={{ fontSize: 18, color: 'white' }} />
+                  <HiPlus style={{ fontSize: 18, color: 'var(--accent-primary)' }} />
                 </div>
-                <span style={{ fontSize: 14, fontWeight: 600, color: 'white' }}>New task</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>New chat</span>
               </div>
 
               {/* Grouped Results */}
@@ -217,20 +217,14 @@ export default function SearchModal({
                           alignItems: 'center',
                           gap: 12,
                           cursor: 'pointer',
-                          background: isSelected ? 'rgba(255,255,255,0.05)' : 'transparent',
+                          background: isSelected ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
                           transition: 'background 0.2s',
                         }}
                         onMouseOver={() => setSelectedIndex(flatIdx)}
                       >
-                        <div style={{ 
-                          width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.1)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                        }}>
-                          <HiChatBubbleLeftRight style={{ fontSize: 18, color: 'white' }} />
-                        </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ 
-                            fontSize: 14, fontWeight: 600, color: 'white', 
+                            fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', 
                             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' 
                           }}>
                             {session.title || 'Untitled Chat'}

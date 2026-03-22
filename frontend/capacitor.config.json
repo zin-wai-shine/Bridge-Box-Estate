@@ -1,0 +1,21 @@
+{
+  "appId": "com.bribox.app",
+  "appName": "BriBox",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": [
+      "bribox-bridge-app.fly.dev",
+      "localhost"
+    ]
+  },
+  "plugins": {
+    "Camera": {
+      "saveToGallery": true,
+      "correctOrientation": true
+    },
+    "Filesystem": {
+      "directory": "Documents"
+    }
+  }
+}

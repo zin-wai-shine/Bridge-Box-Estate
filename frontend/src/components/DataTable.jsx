@@ -58,7 +58,7 @@ const DataTable = ({ columns, data, isLoading }) => {
         <div style={{ position: 'relative', flex: 1, maxWidth: 400 }}>
           <HiOutlineSearch style={{ 
             position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', 
-            color: '#9aa0a6', fontSize: 18 
+            color: 'var(--text-muted)', fontSize: 18 
           }} />
           <input 
             type="text"
@@ -66,23 +66,23 @@ const DataTable = ({ columns, data, isLoading }) => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
-              width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 8, padding: '10px 14px 10px 42px', color: '#e8eaed', fontSize: 14, outline: 'none',
+              width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border)',
+              borderRadius: 8, padding: '10px 14px 10px 42px', color: 'var(--text-primary)', fontSize: 14, outline: 'none',
               transition: 'border-color 0.2s',
             }}
-            onFocus={(e) => (e.target.style.borderColor = '#8ab4f8')}
-            onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
+            onFocus={(e) => (e.target.style.borderColor = 'var(--accent-primary)')}
+            onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
           />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 8, paddingLeft: 12, border: '1px solid rgba(255,255,255,0.1)' }}>
-            <HiOutlineFilter style={{ color: '#9aa0a6' }} />
+          <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-input)', borderRadius: 8, paddingLeft: 12, border: '1px solid var(--border)' }}>
+            <HiOutlineFilter style={{ color: 'var(--text-muted)' }} />
             <select 
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               style={{
-                background: 'transparent', border: 'none', color: '#e8eaed', padding: '8px 12px', outline: 'none', cursor: 'pointer', fontSize: 13
+                background: 'transparent', border: 'none', color: 'var(--text-primary)', padding: '8px 12px', outline: 'none', cursor: 'pointer', fontSize: 13
               }}
             >
               {statusOptions.map(s => <option key={s} value={s} style={{ background: '#131314' }}>{s}</option>)}
@@ -93,12 +93,12 @@ const DataTable = ({ columns, data, isLoading }) => {
 
       {/* Main Table Content */}
       <div style={{ overflowX: 'auto', marginBottom: 20 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: '#e8eaed' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: 'var(--text-primary)' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
               {columns.map((col, idx) => (
                 <th key={idx} style={{ 
-                  padding: '12px 16px', fontSize: 11, fontWeight: 500, color: '#9aa0a6', textTransform: 'uppercase',
+                  padding: '12px 16px', fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', textTransform: 'uppercase',
                   letterSpacing: '0.05em', width: col.flex ? `${(col.flex / 10) * 100}%` : 'auto', minWidth: col.minWidth || 100
                 }}>
                   {col.headerName}
@@ -118,7 +118,7 @@ const DataTable = ({ columns, data, isLoading }) => {
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.2, delay: rowIdx * 0.03 }}
                     style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}
-                    onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)')}
+                    onMouseOver={(e) => (e.currentTarget.style.background = 'var(--accent-glow)')}
                     onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
                   >
                     {columns.map((col, colIdx) => (
@@ -142,7 +142,7 @@ const DataTable = ({ columns, data, isLoading }) => {
 
       {/* Pagination Bar */}
       {filteredData.length > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '12px 0', gap: 24, color: '#9aa0a6', fontSize: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '12px 0', gap: 24, color: 'var(--text-muted)', fontSize: 12 }}>
           <div>
             {(currentPage - 1) * pageSize + 1} – {Math.min(currentPage * pageSize, filteredData.length)} of {filteredData.length}
           </div>
@@ -151,7 +151,7 @@ const DataTable = ({ columns, data, isLoading }) => {
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
               style={{
-                background: 'transparent', border: 'none', color: '#9aa0a6', cursor: currentPage === 1 ? 'default' : 'pointer',
+                background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: currentPage === 1 ? 'default' : 'pointer',
                 opacity: currentPage === 1 ? 0.3 : 1, fontSize: 20, display: 'flex'
               }}
             >
@@ -161,7 +161,7 @@ const DataTable = ({ columns, data, isLoading }) => {
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
               style={{
-                background: 'transparent', border: 'none', color: '#9aa0a6', cursor: currentPage === totalPages ? 'default' : 'pointer',
+                background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: currentPage === totalPages ? 'default' : 'pointer',
                 opacity: currentPage === totalPages ? 0.3 : 1, fontSize: 20, display: 'flex'
               }}
             >

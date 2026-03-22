@@ -19,6 +19,7 @@ import {
   HiOutlineAdjustments as HiAdjustments,
   HiOutlineLightningBolt
 } from 'react-icons/hi'
+import { HiBars3 } from 'react-icons/hi2'
 import DataTable from '../components/DataTable'
 import briboxLogo from '../assets/logo/bribox.svg'
 import whiteLogo from '../assets/logo/white_logo.png'
@@ -35,7 +36,15 @@ export default function AdminPage() {
   const [editProp, setEditProp] = useState(null)
   const [scrapeUrl, setScrapeUrl] = useState('')
   const [scrapeLoading, setScrapeLoading] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(typeof window !== 'undefined' ? window.innerWidth > 768 : true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false)
+    }, 1200)
+    return () => clearTimeout(timer)
+  }, [])
   const [isHeaderHovered, setIsHeaderHovered] = useState(false)
   const [isToggleHovered, setIsToggleHovered] = useState(false)
   const [pendingFiles, setPendingFiles] = useState([])
@@ -243,8 +252,8 @@ export default function AdminPage() {
       flex: 3, 
       cellRenderer: (params) => (
         <div className="flex flex-col py-2">
-          <span style={{ color: '#8ab4f8', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>{params.data.address}</span>
-          <span style={{ color: '#9aa0a6', fontSize: 11 }}>{params.data.city}, {params.data.state}</span>
+          <span style={{ color: 'var(--accent-primary)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>{params.data.address}</span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{params.data.city}, {params.data.state}</span>
         </div>
       ) 
     },
@@ -252,13 +261,13 @@ export default function AdminPage() {
       field: 'price', 
       headerName: 'PRICE', 
       cellRenderer: (params) => (
-        <div style={{ color: '#e8eaed', fontWeight: 400 }}>${params.value?.toLocaleString()}</div>
+        <div style={{ color: 'var(--text-primary)', fontWeight: 400 }}>${params.value?.toLocaleString()}</div>
       )
     },
     { 
       headerName: 'BEDS / BATHS', 
       cellRenderer: (params) => (
-        <div style={{ color: '#9aa0a6' }}>{params.data.bedrooms}bd / {params.data.bathrooms}ba</div>
+        <div style={{ color: 'var(--text-secondary)' }}>{params.data.bedrooms}bd / {params.data.bathrooms}ba</div>
       )
     },
     { 
@@ -266,7 +275,7 @@ export default function AdminPage() {
       headerName: 'STATUS', 
       cellRenderer: (params) => (
         <span style={{ 
-          background: 'rgba(255,255,255,0.05)', color: '#9aa0a6', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 500
+          background: 'var(--bg-input)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 500
         }}>{params.value}</span>
       ) 
     },
@@ -305,8 +314,8 @@ export default function AdminPage() {
       flex: 3, 
       cellRenderer: (params) => (
         <div className="flex flex-col py-2">
-          <span style={{ color: '#8ab4f8', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>{params.data.address}</span>
-          <span style={{ color: '#9aa0a6', fontSize: 11 }}>{params.data.city}, {params.data.state}</span>
+          <span style={{ color: 'var(--accent-primary)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>{params.data.address}</span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{params.data.city}, {params.data.state}</span>
         </div>
       ) 
     },
@@ -314,13 +323,13 @@ export default function AdminPage() {
       field: 'price', 
       headerName: 'PRICE', 
       cellRenderer: (params) => (
-        <div style={{ color: '#e8eaed', fontWeight: 400 }}>${params.value?.toLocaleString()}</div>
+        <div style={{ color: 'var(--text-primary)', fontWeight: 400 }}>${params.value?.toLocaleString()}</div>
       )
     },
     { 
       headerName: 'BEDS / BATHS', 
       cellRenderer: (params) => (
-        <div style={{ color: '#9aa0a6' }}>{params.data.bedrooms}bd / {params.data.bathrooms}ba</div>
+        <div style={{ color: 'var(--text-secondary)' }}>{params.data.bedrooms}bd / {params.data.bathrooms}ba</div>
       )
     },
     { 
@@ -335,7 +344,7 @@ export default function AdminPage() {
       headerName: 'STATUS', 
       cellRenderer: (params) => (
         <span style={{ 
-          background: 'rgba(59, 130, 246, 0.1)', color: '#8ab4f8', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 500
+          background: 'rgba(16, 185, 129, 0.1)', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 500
         }}>{params.value}</span>
       ) 
     },
@@ -346,8 +355,8 @@ export default function AdminPage() {
     { field: 'owner_user_id', headerName: 'OWNER ID', cellStyle: { color: '#9aa0a6' } },
     { field: 'status', headerName: 'STATUS', cellRenderer: (params) => (
       <span style={{ 
-        background: params.value === 'Approved' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(255,255,255,0.05)', 
-        color: params.value === 'Approved' ? '#4ade80' : '#9aa0a6', 
+        background: params.value === 'Approved' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-input)', 
+        color: params.value === 'Approved' ? 'var(--accent-primary)' : 'var(--text-muted)', 
         padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 500
       }}>{params.value}</span>
     ) },
@@ -389,34 +398,48 @@ export default function AdminPage() {
   ]
 
   return (
-    <div className="page-container" style={{ background: 'var(--bg-primary)', height: '100vh' }}>
-      <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-        {/* Sidebar */}
+    <div className="chat-layout">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div 
+          className="md:hidden"
+          style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 45 }}
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Wrapper */}
+      <div className={`chat-sidebar-wrapper ${sidebarOpen ? 'mobile-open' : ''}`}>
         <motion.nav 
           initial={false}
           animate={{ width: sidebarOpen ? 280 : 60 }}
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           style={{
             height: '100%',
-            background: '#090909',
+            background: 'var(--bg-secondary)',
+            color: 'var(--text-primary)',
             display: 'flex',
             flexDirection: 'column',
             borderRight: 'none',
             zIndex: 20,
-            overflow: 'hidden',
+            overflow: 'visible',
+            position: 'relative'
           }}
         >
           <div 
             onMouseEnter={() => setIsHeaderHovered(true)}
             onMouseLeave={() => setIsHeaderHovered(false)}
             style={{ 
-              padding: sidebarOpen ? '16px 12px 12px' : '16px 0 12px',
+              paddingTop: `calc(${sidebarOpen ? '16px' : '16px'} + env(safe-area-inset-top))`,
+              paddingRight: sidebarOpen ? '12px' : '0px',
+              paddingBottom: '12px',
+              paddingLeft: sidebarOpen ? '12px' : '0px',
               position: 'relative',
               display: 'flex',
               flexDirection: 'column',
               alignItems: sidebarOpen ? 'flex-start' : 'center',
-              minHeight: sidebarOpen ? 80 : 100,
-              cursor: 'pointer'
+              minHeight: sidebarOpen ? 40 : 100,
+              cursor: 'default'
             }}
           >
             {sidebarOpen ? (
@@ -429,29 +452,48 @@ export default function AdminPage() {
                     backgroundSize: 'contain',
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'left center',
-                    filter: 'brightness(0.8549)'
+                    filter: 'brightness(0) saturate(100%) invert(26%) sepia(85%) saturate(718%) hue-rotate(113deg) brightness(97%) contrast(100%)'
                   }} />
                   <span style={{ 
                     fontSize: '16px', 
                     fontWeight: '800', 
-                    color: '#dadada', 
+                    color: 'var(--text-secondary)', 
                     letterSpacing: '1px'
                   }}>bribox</span>
                 </div>
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
                   <button 
                     onClick={(e) => { e.stopPropagation(); setSidebarOpen(false) }}
-                    style={{
-                      background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-secondary)',
-                      fontSize: 20, cursor: 'pointer', padding: 6, borderRadius: 8,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all 0.2s',
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--accent-glow)'
                     }}
-                    onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-                    onMouseOut={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent'
+                    }}
+                    style={{
+                      background: 'transparent', border: 'none', color: 'var(--text-secondary)',
+                      cursor: 'pointer', width: 36, height: 36, borderRadius: 8,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.2s', flexShrink: 0
+                    }}
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <motion.div 
+                      className="hover-badge"
+                      initial={{ opacity: 0, x: -5, y: '-50%' }}
+                      animate={{ opacity: isHeaderHovered ? 1 : 0, x: 0, y: '-50%' }}
+                      style={{
+                        position: 'absolute', left: '100%', top: '50%', marginLeft: 12,
+                        padding: '4px 10px', background: '#065f46',
+                        color: 'white', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                        whiteSpace: 'nowrap', zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                        border: '1px solid rgba(255,255,255,0.1)', pointerEvents: 'none',
+                        transition: { duration: 0.1, ease: 'easeOut' }
+                      }}
+                    >
+                      Close sidebar
+                    </motion.div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                       <line x1="9" y1="3" x2="9" y2="21"/>
                     </svg>
@@ -459,17 +501,18 @@ export default function AdminPage() {
                 </div>
               </div>
             ) : (
-              <div style={{ position: 'relative', width: '60px', height: '60px', cursor: 'pointer' }} onClick={() => setSidebarOpen(true)}>
+              <div style={{ position: 'relative', width: '40px', height: '40px' }}>
                 <div style={{
-                  width: '60px',
-                  height: '60px',
+                  width: '40px',
+                  height: '40px',
                   backgroundImage: `url(${briboxLogo})`,
                   backgroundSize: 'contain',
-                  filter: 'brightness(0.85)',
+                  filter: 'brightness(0) saturate(100%) invert(26%) sepia(85%) saturate(718%) hue-rotate(113deg) brightness(97%) contrast(100%)',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center',
                   opacity: isHeaderHovered ? 0 : 1,
-                  transition: 'opacity 0.2s'
+                  transition: 'opacity 0.2s',
+                  zIndex: 1
                 }} />
 
                 <AnimatePresence>
@@ -479,19 +522,40 @@ export default function AdminPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       onClick={(e) => { e.stopPropagation(); setSidebarOpen(true) }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--accent-glow)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
+                      }}
                       style={{
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        background: '#1a1a1a', color: 'var(--text-secondary)',
-                        border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
+                        top: 2,
+                        left: 2,
+                        width: 36,
+                        height: 36,
+                        background: 'transparent', color: 'var(--text-secondary)',
+                        border: 'none', borderRadius: 8,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         cursor: 'pointer', zIndex: 40,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                        margin: '0 auto'
                       }}
                     >
+                      <motion.div 
+                        className="hover-badge"
+                        initial={{ opacity: 0, x: -5, y: '-50%' }}
+                        animate={{ opacity: 1, x: 0, y: '-50%' }}
+                        style={{
+                          position: 'absolute', left: '100%', top: '50%', marginLeft: 12,
+                          padding: '4px 10px', background: '#065f46',
+                          color: 'white', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                          whiteSpace: 'nowrap', zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                          border: '1px solid rgba(255,255,255,0.1)', pointerEvents: 'none',
+                          transition: { duration: 0.1, ease: 'easeOut' }
+                        }}
+                      >
+                        Open sidebar
+                      </motion.div>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                         <line x1="15" y1="3" x2="15" y2="21"/>
@@ -505,95 +569,76 @@ export default function AdminPage() {
 
           {/* Navigation Items */}
           <div style={{ 
-            padding: sidebarOpen ? '0 8px 10px' : '0 8px', 
+            padding: sidebarOpen ? '0 8px 10px' : '0', 
             display: 'flex', 
             flexDirection: 'column', 
-            gap: 4,
-            flex: 1 
+            gap: 2,
+            flex: 1,
+            overflow: 'visible'
           }}>
             {tabs.map(t => (
-              <motion.button
+              <NavButton 
                 key={t.id}
+                icon={t.icon}
+                label={t.label}
+                active={tab === t.id}
                 onClick={() => setTab(t.id)}
-                whileHover={{ x: sidebarOpen ? 4 : 0 }}
-                transition={{ duration: 0.2 }}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: sidebarOpen ? 'flex-start' : 'center',
-                  gap: 12, padding: '10px 8px', minHeight: 44,
-                  borderRadius: 10, border: 'none', cursor: 'pointer',
-                  background: tab === t.id ? 'var(--bg-input)' : 'transparent',
-                  color: tab === t.id ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  fontSize: 14, fontWeight: tab === t.id ? 600 : 500,
-                  fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.2s',
-                  width: '100%'
-                }}
-                onMouseOver={(e) => { if (tab !== t.id) e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
-                onMouseOut={(e) => { if (tab !== t.id) e.currentTarget.style.background = 'transparent' }}
-                title={!sidebarOpen ? t.label : ''}
-              >
-                <t.icon style={{ fontSize: 20, color: tab === t.id ? 'var(--accent-primary)' : 'inherit', flexShrink: 0 }} />
-                {sidebarOpen && <span>{t.label}</span>}
-              </motion.button>
+                collapsed={!sidebarOpen}
+                isLoading={isInitialLoading}
+              />
             ))}
           </div>
 
           {/* Sidebar Footer */}
           <div style={{ 
             marginTop: 'auto', 
-            padding: '12px 8px', 
+            padding: '12px 0', 
             borderTop: '1px solid rgba(255,255,255,0.03)', 
-            background: 'rgba(0,0,0,0.2)', 
-            width: '100%' 
+            background: 'var(--bg-secondary)', 
+            width: '100%',
+            overflow: 'visible'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: sidebarOpen ? 'flex-start' : 'center', gap: 4 }}>
-              <Link to="/chat" title="Go to Chat" style={{ textDecoration: 'none', flex: sidebarOpen ? 1 : 'none' }}>
-                <div 
-                  style={{
-                    width: sidebarOpen ? 'auto' : 40,
-                    padding: '8px 10px',
-                    borderRadius: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    color: 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    transition: 'background 0.2s'
-                  }}
-                  onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                  onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <HiOutlineChat style={{ fontSize: 20 }} />
-                  {sidebarOpen && <span style={{ fontSize: 13, fontWeight: 500 }}>Chat</span>}
-                </div>
+            <div style={{ padding: sidebarOpen ? '0 8px' : '0', display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
+              <Link to="/chat" style={{ textDecoration: 'none', width: '100%' }}>
+                 <NavButton 
+                  icon={HiOutlineChat}
+                  label="Chat"
+                  onClick={() => {}}
+                  collapsed={!sidebarOpen}
+                  isLoading={isInitialLoading}
+                />
               </Link>
-              
               <div 
                 onClick={handleLogout}
-                title="Logout"
-                style={{
-                  width: sidebarOpen ? 'auto' : 40,
-                  padding: '8px 10px',
-                  borderRadius: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s',
-                  justifyContent: sidebarOpen ? 'flex-start' : 'center'
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+                style={{ width: '100%' }}
               >
-                <HiOutlineLogout style={{ fontSize: 20 }} />
-                {sidebarOpen && <span style={{ fontSize: 13, fontWeight: 500 }}>Logout</span>}
+                <NavButton 
+                  icon={HiOutlineLogout}
+                  label="Logout"
+                  onClick={() => {}}
+                  collapsed={!sidebarOpen}
+                />
               </div>
             </div>
           </div>
         </motion.nav>
+      </div>
 
-        {/* Main Content */}
-        <main style={{ flex: 1, overflowY: 'auto', padding: 32 }}>
+      {/* Main Content Area */}
+      <div className="chat-main-area">
+        {/* Mobile Top Bar */}
+        <div className="mobile-top-bar">
+          <button 
+            onClick={() => setSidebarOpen(true)}
+            style={{ background: 'transparent', border: 'none', color: 'white', display: 'flex', alignItems: 'center' }}
+          >
+            <HiBars3 style={{ fontSize: 24 }} />
+          </button>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>BriBox Admin</div>
+          <div style={{ width: 24 }} />
+        </div>
+
+        <main className="mobile-admin-main" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: 32 }}>
           <AnimatePresence mode="wait">
             {/* Dashboard Tab */}
             {tab === 'dashboard' && (
@@ -604,35 +649,41 @@ export default function AdminPage() {
                     onClick={loadData} 
                     disabled={loading}
                     style={{
-                      background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-secondary)',
+                      background: 'rgba(16, 185, 129, 0.05)', border: 'none', color: 'var(--text-secondary)',
                       fontSize: 12, fontWeight: 500, padding: '8px 16px', borderRadius: 8,
                       cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                       transition: 'all 0.2s'
                     }}
-                    onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-                    onMouseOut={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                    onMouseOver={(e) => (e.currentTarget.style.background = 'var(--bg-card)')}
+                    onMouseOut={(e) => (e.currentTarget.style.background = 'rgba(16, 185, 129, 0.05)')}
                   >
                     <HiOutlineRefresh className={loading ? 'animate-spin' : ''} style={{ fontSize: 16 }} /> Refresh
                   </button>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
-                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(255,255,255,0.03)' }}>
-                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--text-primary)' }}>{stats.draft_listings}</div>
+                <div className="mobile-grid-auto" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
+                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(16, 185, 129, 0.05)' }}>
+                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--text-primary)' }}>
+                      {isInitialLoading ? <div className="skeleton-pulse" style={{ width: 40, height: 32, borderRadius: 4, background: 'rgba(255,255,255,0.05)' }} /> : stats.draft_listings}
+                    </div>
                     <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Draft Listings</div>
                   </div>
-                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(255,255,255,0.03)' }}>
-                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--accent-primary)' }}>{stats.active_listings}</div>
+                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(16, 185, 129, 0.05)' }}>
+                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--accent-primary)' }}>
+                      {isInitialLoading ? <div className="skeleton-pulse" style={{ width: 40, height: 32, borderRadius: 4, background: 'rgba(255,255,255,0.05)' }} /> : stats.active_listings}
+                    </div>
                     <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Active Listings</div>
                   </div>
-                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(255,255,255,0.03)' }}>
-                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--text-primary)' }}>{stats.pending_permissions}</div>
+                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(16, 185, 129, 0.05)' }}>
+                    <div className="metric-value" style={{ fontSize: 28, color: 'var(--text-primary)' }}>
+                      {isInitialLoading ? <div className="skeleton-pulse" style={{ width: 40, height: 32, borderRadius: 4, background: 'rgba(255,255,255,0.05)' }} /> : stats.pending_permissions}
+                    </div>
                     <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Pending Permissions</div>
                   </div>
-                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(255,255,255,0.03)' }}>
+                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(16, 185, 129, 0.05)' }}>
                     <div className="metric-value" style={{ fontSize: 28, color: 'var(--text-muted)', opacity: 0.5 }}>0</div>
                     <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Active Sessions</div>
                   </div>
-                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(255,255,255,0.03)' }}>
+                  <div className="metric-card" style={{ padding: '20px 24px', border: 'none', boxShadow: 'none', background: 'rgba(34,197,94,0.03)' }}>
                     <div className="metric-value" style={{ fontSize: 28, color: 'var(--text-muted)', opacity: 0.5 }}>0</div>
                     <div className="metric-label" style={{ textTransform: 'uppercase', letterSpacing: 1, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Total Views</div>
                   </div>
@@ -688,18 +739,18 @@ export default function AdminPage() {
                           padding: log.role === 'user' ? '12px 20px' : '0',
                           background: log.role === 'user' ? 'var(--bg-input)' : 'transparent',
                           borderRadius: 20,
-                          color: log.role === 'user' ? 'var(--text-primary)' : '#e8eaed',
+                          color: 'var(--text-primary)',
                           fontSize: 15,
                           lineHeight: 1.6
                         }}>
                           {log.role === 'ai' && (
                              <div style={{ display: 'flex', gap: 16 }}>
                                <div style={{ 
-                                 width: 32, height: 32, borderRadius: '50%', background: '#1c1c1c', 
+                                 width: 32, height: 32, borderRadius: '50%', background: 'var(--bg-card)', 
                                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4,
-                                 border: '1px solid rgba(255,255,255,0.08)'
+                                 border: '1px solid var(--border)'
                                }}>
-                                 <img src={briboxLogo} style={{ width: 18, height: 'auto', filter: 'brightness(0.9)' }} alt="" />
+                                 <img src={briboxLogo} style={{ width: 18, height: 'auto', filter: 'brightness(0) saturate(100%) invert(26%) sepia(85%) saturate(718%) hue-rotate(113deg) brightness(97%) contrast(100%)' }} alt="" />
                                </div>
                                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                  {/* 1. PROGRESS CARD TYPE */}
@@ -710,7 +761,7 @@ export default function AdminPage() {
                                          {s.status === 'success' ? <HiOutlineCheck style={{ color: 'var(--success)', fontSize: 18 }} /> :
                                           s.status === 'loading' ? <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #8ab4f8', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} /> :
                                           <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)' }} />}
-                                         <span style={{ fontSize: 13, color: s.status === 'pending' ? '#5f6368' : '#e8eaed' }}>{s.label}</span>
+                                         <span style={{ fontSize: 13, color: s.status === 'pending' ? 'var(--text-muted)' : 'var(--text-primary)' }}>{s.label}</span>
                                        </div>
                                      ))}
                                    </div>
@@ -722,11 +773,11 @@ export default function AdminPage() {
                                      initial={{ opacity: 0, scale: 0.98 }} 
                                      animate={{ opacity: 1, scale: 1 }}
                                      className="glass-strong" 
-                                     style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxWidth: 500, border: '1px solid rgba(255,255,255,0.1)' }}
+                                     style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxWidth: 500, border: '1px solid var(--border)', background: 'var(--bg-card)' }}
                                    >
                                       {/* High-Res Image Slider (Simplified with Management) */}
                                       {log.images && log.images.length > 0 && (
-                                        <div style={{ position: 'relative', width: '100%', height: 300, background: '#131314' }}>
+                                        <div style={{ position: 'relative', width: '100%', height: 300, background: 'var(--bg-input)' }}>
                                            <img src={log.images[0].url} alt="Property" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                            <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 8 }}>
                                               <button style={{ background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, color: 'white', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -844,20 +895,21 @@ export default function AdminPage() {
                         }
                         handleScrape(e)
                       }}
-                      className="glass-strong"
+                      className="glass-strong tactical-input-bar"
                       style={{ 
                         borderRadius: 24, 
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        border: '1px solid var(--border)',
                         padding: '16px 20px',
                         display: 'flex',
                         flexDirection: 'column',
                         minHeight: 120,
                         position: 'relative',
-                        background: 'rgba(255,255,255,0.03)'
+                        background: 'var(--bg-card)',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
                       }}
                     >
                       {/* Top Right Indicator Dot */}
-                      <div style={{ position: 'absolute', top: 16, right: 20, width: 8, height: 8, borderRadius: '50%', background: '#7c4dff', boxShadow: '0 0 10px #7c4dff' }} />
+                      <div style={{ position: 'absolute', top: 16, right: 20, width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-glow)' }} />
 
                       <textarea 
                         placeholder="Bridge a listing URL, or ask to refine the details..."
@@ -871,7 +923,7 @@ export default function AdminPage() {
                         }}
                         style={{
                           width: '100%', background: 'transparent', border: 'none',
-                          color: '#e8eaed', fontSize: 16, outline: 'none',
+                          color: 'var(--text-primary)', fontSize: 16, outline: 'none',
                           resize: 'none', flex: 1, padding: '4px 0',
                           lineHeight: 1.5
                         }}
@@ -879,13 +931,32 @@ export default function AdminPage() {
 
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
                         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                          <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.15)', color: '#9aa0a6', transition: 'all 0.2s' }}>
-                            <HiPlus style={{ fontSize: 18 }} />
+                          <motion.label 
+                            whileHover={{ backgroundColor: 'rgba(16, 185, 129, 0.15)' }}
+                            style={{ 
+                              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                              width: 32, height: 32, borderRadius: '50%', 
+                              background: 'rgba(16, 185, 129, 0.08)', 
+                              border: 'none', 
+                              color: 'var(--accent-primary)', transition: 'all 0.2s' 
+                            }}
+                          >
+                            <HiPlus style={{ fontSize: 18, color: 'var(--accent-primary)' }} />
                             <input type="file" multiple hidden onChange={handleFileChange} />
-                          </label>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', color: '#9aa0a6' }}>
+                          </motion.label>
+                          <motion.div 
+                            whileHover={{ backgroundColor: 'rgba(16, 185, 129, 0.15)' }}
+                            style={{ 
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                              width: 32, height: 32, borderRadius: '50%', 
+                              background: 'rgba(16, 185, 129, 0.08)', 
+                              border: 'none', 
+                              color: 'var(--accent-primary)',
+                              cursor: 'pointer'
+                            }}
+                          >
                             <HiOutlineLightningBolt style={{ fontSize: 16 }} />
-                          </div>
+                          </motion.div>
                         </div>
 
                         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
@@ -894,7 +965,7 @@ export default function AdminPage() {
                             type="submit"
                             disabled={scrapeLoading || (!scrapeUrl && pendingFiles.length === 0)}
                             style={{ 
-                              background: 'white', color: 'black', border: 'none', borderRadius: '50%',
+                              background: 'var(--accent-primary)', color: 'white', border: 'none', borderRadius: '50%',
                               width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
                               cursor: 'pointer', opacity: (scrapeLoading || (!scrapeUrl && pendingFiles.length === 0)) ? 0.3 : 1, 
                               transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
@@ -922,7 +993,7 @@ export default function AdminPage() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
                 style={{
-                  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
+                  position: 'fixed', inset: 0, background: 'rgba(242, 252, 245, 0.6)', backdropFilter: 'blur(10px)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   zIndex: 100, padding: 24
                 }}
@@ -953,6 +1024,88 @@ export default function AdminPage() {
           </AnimatePresence>
         </main>
       </div>
+    </div>
+  )
+}
+
+function NavButton({ icon: Icon, label, active, onClick, collapsed, isLoading }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div style={{ position: 'relative', height: collapsed ? 36 : 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', width: collapsed ? 36 : '100%', margin: collapsed ? '0 auto' : '0' }}>
+      {collapsed && (
+        <motion.div 
+          initial={{ opacity: 0, x: -5, y: '-50%' }}
+          animate={{ opacity: hovered ? 1 : 0, x: 0, y: '-50%' }}
+          style={{
+            position: 'absolute',
+            left: '100%',
+            top: '50%',
+            marginLeft: 12,
+            padding: '4px 10px',
+            background: '#065f46',
+            color: 'white',
+            borderRadius: 6,
+            fontSize: 11,
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+            zIndex: 100,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            pointerEvents: 'none',
+            transition: { duration: 0.1, ease: 'easeOut' }
+          }}
+        >
+          {label}
+        </motion.div>
+      )}
+      <motion.button
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          gap: collapsed ? 0 : 12,
+          padding: collapsed ? '0' : '4px 0',
+          width: collapsed ? 36 : '100%',
+          height: collapsed ? 36 : 'auto',
+          borderRadius: 8,
+          border: 'none',
+          cursor: 'pointer',
+          background: active ? 'rgba(16, 185, 129, 0.15)' : (hovered ? 'var(--accent-glow)' : 'transparent'),
+          color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
+          transition: 'all 0.2s',
+          position: 'relative',
+          minHeight: collapsed ? 36 : 32
+        }}
+      >
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          width: 36,
+          height: 36,
+          flexShrink: 0
+        }}>
+          <Icon style={{ fontSize: 20 }} />
+        </div>
+        {!collapsed && (
+          isLoading ? (
+            <div className="skeleton-pulse" style={{ height: 16, width: 80, borderRadius: 4, background: 'rgba(255,255,255,0.05)', marginLeft: 0 }} />
+          ) : (
+            <span style={{ 
+              fontSize: 14, 
+              fontWeight: active ? 600 : 500,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              {label}
+            </span>
+          )
+        )}
+      </motion.button>
     </div>
   )
 }

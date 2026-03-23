@@ -25,6 +25,7 @@ import {
 import briboxLogo from '../assets/logo/bribox.svg'
 import { sendMessage, getSessions, createSession, updateSession, deleteSession, getSessionHistory } from '../services/api'
 import ChatSidebar, { MenuSkeleton } from '../components/ChatSidebar'
+import AuthModal from '../components/AuthModal'
 import { listen } from '@tauri-apps/api/event'
 import { pickImage, isNative } from '../services/native'
 
@@ -478,7 +479,15 @@ export default function ChatPage() {
   
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const token = localStorage.getItem('bribox_token')
   const user = JSON.parse(localStorage.getItem('bribox_user') || '{}')
+  const isAuthenticated = !!token && !!user.id
+
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState('login')
+  const [guestUsageCount, setGuestUsageCount] = useState(() => {
+    return parseInt(localStorage.getItem('bribox_guest_count') || '0')
+  })
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -517,16 +526,21 @@ export default function ChatPage() {
     }
   }, [])
   useEffect(() => {
-    fetchSessions()
-  }, [])
+    if (isAuthenticated) {
+      fetchSessions()
+    } else {
+      setSessions([])
+      setIsInitialLoading(false)
+    }
+  }, [isAuthenticated])
 
   useEffect(() => {
-    if (activeSessionId) {
+    if (activeSessionId && isAuthenticated) {
       loadSessionHistory(activeSessionId)
-    } else {
+    } else if (!activeSessionId) {
       setMessages([])
     }
-  }, [activeSessionId])
+  }, [activeSessionId, isAuthenticated])
 
   useEffect(() => {
     scrollToBottom()
@@ -537,6 +551,7 @@ export default function ChatPage() {
   }
 
   const fetchSessions = async () => {
+    if (!isAuthenticated) return
     try {
       const res = await getSessions()
       const data = res.data.sessions || []
@@ -547,10 +562,13 @@ export default function ChatPage() {
       }
     } catch (err) {
       console.error('Failed to fetch sessions:', err)
+    } finally {
+      setIsInitialLoading(false)
     }
   }
 
   const loadSessionHistory = async (id) => {
+    if (!isAuthenticated) return
     try {
       const res = await getSessionHistory(id)
       if (res.data.messages) {
@@ -567,6 +585,11 @@ export default function ChatPage() {
   }
 
   const handleNewChat = async () => {
+    if (!isAuthenticated) {
+      setAuthModalMode('login')
+      setIsAuthModalOpen(true)
+      return
+    }
     setMessages([])
     setActiveSessionId(null)
     inputRef.current?.focus()
@@ -577,6 +600,7 @@ export default function ChatPage() {
   }
 
   const handleUpdateSession = async (id, data) => {
+    if (!isAuthenticated) return
     try {
       await updateSession(id, data)
       fetchSessions()
@@ -586,6 +610,7 @@ export default function ChatPage() {
   }
 
   const handleDeleteSession = async (id) => {
+    if (!isAuthenticated) return
     try {
       await deleteSession(id)
       if (activeSessionId === id) {
@@ -598,8 +623,21 @@ export default function ChatPage() {
   }
 
   const handleSend = async (text) => {
+    if (!isAuthenticated && guestUsageCount >= 5) {
+      setAuthModalMode('login')
+      setIsAuthModalOpen(true)
+      return
+    }
+
     const msg = text || input.trim()
     if (!msg || loading) return
+
+    // If guest, increment count
+    if (!isAuthenticated) {
+      const newCount = guestUsageCount + 1
+      setGuestUsageCount(newCount)
+      localStorage.setItem('bribox_guest_count', newCount.toString())
+    }
 
     const userMsg = { id: Date.now(), content: msg, role: 'user', timestamp: new Date().toISOString() }
     setMessages(prev => [...prev, userMsg])
@@ -623,6 +661,14 @@ export default function ChatPage() {
       setMessages(prev => [...prev, aiMsg])
     } catch (err) {
       console.error('Failed to send message:', err)
+      
+      // If auth error for a guest, show modal
+      if (!isAuthenticated && err.response?.status === 401) {
+        setAuthModalMode('login')
+        setIsAuthModalOpen(true)
+        return
+      }
+
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         content: 'Sorry, I encountered an error connecting to the Bridge Engine.',
@@ -664,7 +710,120 @@ export default function ChatPage() {
   const isAgent = user.role === 'Agent' || user.role === 'Admin'
 
   return (
-    <div className="chat-layout">
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100vh', 
+      width: '100vw', 
+      overflow: 'hidden',
+      background: 'var(--accent-primary)'
+    }}>
+      {/* Global Top Banner (Nav Bar) */}
+      {!isAuthenticated ? (
+        <div style={{
+          background: 'var(--accent-primary)',
+          color: 'white',
+          height: '40px',
+          padding: '0 24px',
+          fontSize: 13,
+          fontWeight: 500,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          zIndex: 100,
+          flexShrink: 0
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ 
+              background: 'rgba(255,255,255,0.2)', 
+              padding: '2px 8px', 
+              borderRadius: 4, 
+              fontSize: 11, 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.05em' 
+            }}>
+              Guest mode
+            </span>
+          </div>
+
+          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.9 }}>
+            You have {5 - guestUsageCount} messages remaining. Create an account to save your chats and access more features.
+          </div>
+
+          <button 
+            onClick={() => {
+              setAuthModalMode('login')
+              setIsAuthModalOpen(true)
+            }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'white',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '6px 16px',
+              borderRadius: '999px',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Sign in
+            <HiArrowRightOnRectangle style={{ fontSize: 16 }} />
+          </button>
+        </div>
+      ) : (
+        <div style={{
+          background: 'var(--accent-primary)',
+          color: 'white',
+          height: '40px',
+          padding: '0 24px',
+          fontSize: 13,
+          fontWeight: 500,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          zIndex: 100,
+          flexShrink: 0
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ 
+              background: 'rgba(255,255,255,0.2)', 
+              padding: '2px 8px', 
+              borderRadius: 4, 
+              fontSize: 11, 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.05em' 
+            }}>
+              BriBox Pro
+            </span>
+          </div>
+
+          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.9 }}>
+            Welcome back! You have unlimited messages and full access to portfolio management tools.
+          </div>
+
+          <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.9, display: 'flex', alignItems: 'center', gap: 6 }}>
+             Active
+             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+          </div>
+        </div>
+      )}
+
+      <div className="chat-layout" style={{ 
+        flex: 1, 
+        height: 'auto',
+        background: 'var(--bg-primary)',
+        borderRadius: '24px 24px 0 0',
+        overflow: 'hidden',
+        boxShadow: '0 -4px 12px rgba(0,0,0,0.05)'
+      }}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div 
@@ -687,6 +846,12 @@ export default function ChatPage() {
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           onLogout={handleLogout}
           isAdmin={isAgent}
+          isAuthenticated={isAuthenticated}
+          user={user}
+          onLoginClick={() => {
+            setAuthModalMode('login')
+            setIsAuthModalOpen(true)
+          }}
         />
       </div>
 
@@ -991,7 +1156,17 @@ export default function ChatPage() {
             onClose={() => setSelectedProperty(null)} 
           />
         )}
+        
+        {isAuthModalOpen && (
+          <AuthModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
+            initialMode={authModalMode}
+            onAuthSuccess={() => window.location.reload()}
+          />
+        )}
       </AnimatePresence>
+    </div>
     </div>
   )
 }

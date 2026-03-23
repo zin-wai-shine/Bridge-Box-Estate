@@ -30,7 +30,7 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg-primary);
+  background: var(--accent-primary);
   color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -397,5 +397,9 @@ body {
     font-size: 14px !important;
     max-width: 90% !important;
   }
+}
+
+.hover-underline:hover {
+  text-decoration: underline;
 }
 

@@ -20,7 +20,8 @@ import {
   HiBookOpen,
   HiBars3BottomLeft,
   HiCog8Tooth,
-  HiArrowRightOnRectangle
+  HiArrowRightOnRectangle,
+  HiUser
 } from 'react-icons/hi2'
 
 export default function ChatSidebar({ 
@@ -32,7 +33,10 @@ export default function ChatSidebar({
   onDeleteSession,
   onToggleSidebar,
   onLogout,
+  onLoginClick,
   isAdmin,
+  isAuthenticated,
+  user,
   isOpen,
   isLoading
 }) {
@@ -43,8 +47,6 @@ export default function ChatSidebar({
   const [showSearchInput, setShowSearchInput] = useState(false)
   const [isHeaderHovered, setIsHeaderHovered] = useState(false)
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
-  const [hoveredAdmin, setHoveredAdmin] = useState(false)
-  const [hoveredLogout, setHoveredLogout] = useState(false)
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -447,27 +449,70 @@ export default function ChatSidebar({
         overflow: 'visible'
       }}>
         <div style={{ padding: isOpen ? '0 8px' : '0', display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
-          {isAdmin && (
-            <Link to="/admin" style={{ textDecoration: 'none', width: '100%' }}>
+          {isAuthenticated ? (
+            <>
+              {isAdmin && (
+                <Link to="/admin" style={{ textDecoration: 'none', width: '100%' }}>
+                  <NavButton 
+                    icon={HiCog8Tooth}
+                    label="Settings"
+                    onClick={() => {}}
+                    collapsed={!isOpen}
+                  />
+                </Link>
+              )}
+              
+              <div 
+                onClick={onLogout}
+                style={{ width: '100%' }}
+              >
+                <div style={{
+                  padding: isOpen ? '8px 12px' : '0',
+                  borderRadius: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  background: 'transparent',
+                  justifyContent: isOpen ? 'flex-start' : 'center',
+                  minHeight: 44
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 16,
+                    background: 'var(--accent-primary)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', fontWeight: 600, fontSize: 13, flexShrink: 0
+                  }}>
+                    {user?.email?.[0].toUpperCase() || <HiUser style={{ fontSize: 18 }} />}
+                  </div>
+                  {isOpen && (
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {user?.email?.split('@')[0] || 'User'}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Logout</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div 
+              onClick={onLoginClick}
+              style={{ width: '100%' }}
+            >
               <NavButton 
-                icon={HiCog8Tooth}
-                label="Settings"
+                icon={HiArrowRightOnRectangle}
+                label="Sign in"
                 onClick={() => {}}
                 collapsed={!isOpen}
               />
-            </Link>
+            </div>
           )}
-          <div 
-            onClick={onLogout}
-            style={{ width: '100%' }}
-          >
-            <NavButton 
-              icon={HiArrowRightOnRectangle}
-              label="Logout"
-              onClick={() => {}}
-              collapsed={!isOpen}
-            />
-          </div>
         </div>
       </div>
     </motion.div>
